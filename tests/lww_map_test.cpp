@@ -1,20 +1,20 @@
 #include <boost/ut.hpp>
 
 #include <cstdint>
-
-#include <awormap.hh>
 #include <string>
+
+#include <lwwmap.hh>
 
 auto main() -> int {
   using namespace boost::ut;
 
-  using awor_map = crdt::awor_map<std::uint64_t, std::string>;
+  using lww_map = crdt::lwwmap<std::uint64_t, std::string>;
 
   "sync by delta equals sync by full state"_test = [] {
-    awor_map replica1(1);
-    awor_map replica2(2);
+    lww_map replica1(1);
+    lww_map replica2(2);
 
-    awor_map replica3(2);
+    lww_map replica3(2);
     replica3.merge(replica2);
 
     auto delta = replica1.insert(10UL, std::string{"value 10"});
@@ -27,9 +27,9 @@ auto main() -> int {
   };
 
   "associative"_test = [] {
-    awor_map replica1(1);
-    awor_map replica2(2);
-    awor_map replica3(3);
+    lww_map replica1(1);
+    lww_map replica2(2);
+    lww_map replica3(3);
 
     replica1.insert(11UL, std::string{"value 11"});
     replica2.insert(12UL, std::string{"value 12"});
@@ -52,8 +52,8 @@ auto main() -> int {
   };
 
   "commutative"_test = [] {
-    awor_map replica1(1);
-    awor_map replica2(2);
+    lww_map replica1(1);
+    lww_map replica2(2);
 
     replica1.insert(11UL, std::string{"value 11"});
     replica2.insert(12UL, std::string{"value 12"});
@@ -71,7 +71,7 @@ auto main() -> int {
   };
 
   "idempotent"_test = [] {
-    awor_map replica1(1);
+    lww_map replica1(1);
 
     replica1.insert(11UL, std::string{"value 11"});
 

@@ -10,25 +10,32 @@
 namespace crdt {
 
 template <typename V> struct lwwreg {
+  lwwreg() {}
   lwwreg(std::uint64_t replicaID) : _replicaID(replicaID) {}
+  lwwreg(const lwwreg<V> &) = default;
+  lwwreg(lwwreg<V> &&) = default;
+
+  lwwreg<V> &operator=(const lwwreg<V> &) = default;
+  lwwreg<V> &operator=(lwwreg<V> &&) = default;
 
   auto set(V value) noexcept -> /* delta */ lwwreg<V> {
     _value = value;
     _timestamp = std::chrono::high_resolution_clock::now();
-	return *this;
+    return *this;
   }
 
   void merge(lwwreg<V> delta) noexcept {
     if (_timestamp <= delta._timestamp) {
       _value = delta._value;
-	  _timestamp = delta._timestamp;
-	}
+      _timestamp = delta._timestamp;
+    }
   }
 
   auto read() const noexcept -> V { return _value; }
 
 private:
-  using timestamp_type = std::chrono::time_point<std::chrono::high_resolution_clock>;
+  using timestamp_type =
+      std::chrono::time_point<std::chrono::high_resolution_clock>;
   std::uint64_t _replicaID;
   V _value;
   timestamp_type _timestamp;

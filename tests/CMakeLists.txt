@@ -23,3 +23,5 @@ crdt_test(NAME "mvreg_test")
 crdt_test(NAME "lwwreg_test")
 
 crdt_test(NAME "awor_map_test")
+
+crdt_test(NAME "lww_map_test")

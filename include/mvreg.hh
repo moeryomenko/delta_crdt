@@ -35,7 +35,7 @@ struct mvreg {
     std::transform(_values.entries.cbegin(), _values.entries.cend(),
                    std::inserter(result, result.end()),
                    [](const auto &it) { return it.second; });
-	return result;
+    return result;
   }
 
 private:

@@ -142,10 +142,10 @@ struct dot_kernel {
       -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
     for (auto [d, _] : entries) {
-		delta.context.add(d);
+      delta.context.add(d);
     }
-	entries.erase(entries.begin(), entries.end());
-	return delta;
+    entries.erase(entries.begin(), entries.end());
+    return delta;
   }
 };
 
