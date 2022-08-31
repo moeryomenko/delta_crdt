@@ -6,6 +6,7 @@
 
 #include <crdt_traits.hh>
 #include <dot.hh>
+#include <iterator>
 
 namespace crdt {
 
@@ -45,7 +46,13 @@ struct awor_set {
     return _values.entries == other._values.entries;
   }
 
-  auto values() const noexcept -> std::set<V> {}
+  auto values() const noexcept -> std::set<V> {
+    std::set<V> values;
+    std::transform(_values.entries.begin(), _values.entries.end(),
+                   std::inserter(values, values.begin()),
+                   [](const auto &it) { return it.second; });
+    return values;
+  }
 
 private:
   std::uint64_t _replicaID;

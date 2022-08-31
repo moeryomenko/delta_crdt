@@ -22,12 +22,9 @@ auto main() -> int {
 
     replica3.merge(replica1);
 
-    expect(replica2.contains(10UL));
-    expect(replica3.contains(10UL));
-    expect(replica2.contains(11UL));
-    expect(replica3.contains(11UL));
-    expect(!replica2.contains(12UL));
-    expect(!replica3.contains(12UL));
+    expect(replica1.values() == std::set<std::uint64_t>{10UL, 11UL});
+    expect(replica2.values() == std::set<std::uint64_t>{10UL, 11UL});
+    expect(replica3.values() == std::set<std::uint64_t>{10UL, 11UL});
   };
 
   "associative"_test = [] {
