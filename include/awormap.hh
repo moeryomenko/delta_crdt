@@ -7,6 +7,7 @@
 
 #include <crdt_traits.hh>
 #include <dot.hh>
+#include <iterator>
 
 namespace crdt {
 
@@ -19,6 +20,8 @@ template <std::equality_comparable K, typename V,
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct awor_map {
   awor_map(std::uint64_t replicaID) : _replicaID(replicaID), _keys(replicaID){};
+
+  auto operator[](K key) noexcept -> V { return _entries[key]; }
 
   auto insert(K key, V value)
       -> /* delta */ awor_map<K, V, _kv_map_type, _entries_map_type, _set_type,
@@ -40,7 +43,10 @@ struct awor_map {
   merge(awor_map<K, V, _kv_map_type, _entries_map_type, _set_type, _map_type>
             delta) noexcept {
     _keys.merge(delta._keys);
-    _entries.insert(delta._entries.begin(), delta._entries.end());
+    for (auto [d, value] : delta._entries) {
+      if (_keys.contains(d))
+        _entries[d] = value;
+    }
     for (auto it = _entries.begin(); it != _entries.end();) {
       if (_keys.contains(it->first)) {
         ++it;

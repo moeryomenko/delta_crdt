@@ -22,10 +22,12 @@ template <std::equality_comparable K, typename V,
 struct lwwmap {
   lwwmap(std::uint64_t replicaID) : _replicaID(replicaID), _map(replicaID){};
 
+  auto operator[](K key) noexcept -> V { return _map[key].read(); }
+
   auto insert(K key, V value)
       -> /* delta */ lwwmap<K, V, _kv_map_type, _entries_map_type, _set_type,
                             _map_type> {
-    auto delta = _map.insert(key, lwwreg<V>(_replicaID).set(value));
+    auto delta = _map.insert(key, lwwreg<V>(_replicaID, value));
     return lwwmap(_replicaID, delta);
   }
 

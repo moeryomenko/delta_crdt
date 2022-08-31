@@ -128,8 +128,7 @@ struct dot_kernel {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
     for (auto it = entries.begin(); it != entries.end();) {
       if (it->second == value) {
-        delta.context =
-            compact(dot_context<_set_type, _map_type>{}.add(it->first));
+        delta.context = dot_context<_set_type, _map_type>{}.add(it->first);
         it = entries.erase(it);
       } else {
         ++it;

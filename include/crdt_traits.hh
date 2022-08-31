@@ -20,7 +20,7 @@ concept associative_type = std::is_same_v<_key, typename container_type::key_typ
 };
 
 template <typename T, typename _key>
-concept iterable_type = std::is_same_v<_key, typename T::key_type> && requires(T t, typename T::iterator it, const typename T::key_type &key) {
+concept iterable_type = std::is_same_v<_key, typename T::key_type> && requires(T t, typename T::iterator it, typename T::iterator endIt, const typename T::key_type &key) {
 	typename T::key_type;
 	typename T::iterator;
 	typename T::const_iterator;
@@ -29,6 +29,7 @@ concept iterable_type = std::is_same_v<_key, typename T::key_type> && requires(T
 	{ t.end() } -> std::convertible_to<typename T::iterator>;
 	{ t.cend() } -> std::convertible_to<typename T::const_iterator>;
 	{ t.erase(it) } -> std::convertible_to<typename T::iterator>;
+	{ t.insert(it, endIt) } -> std::convertible_to<void>;
 	{ t.find(key) } -> std::convertible_to<typename T::iterator>;
 	{ t.contains(key) } -> std::convertible_to<bool>;
 };
@@ -64,22 +65,7 @@ concept arithmetic_value = actor_type<T> && requires(T a, T b) {
 
 template <typename T>
 concept cvrdt = requires(T a, T b) {
-    { a.validate_merge(b) } -> std::convertible_to<std::optional<std::error_condition>>;
     { a.merge(b) };
-};
-
-template <typename T>
-concept cmrdt = requires(T a, typename T::Op op) {
-    typename T::Op;
-    { a.validate_op(op) } -> std::convertible_to<std::optional<std::error_condition>>;
-    { a.apply(op) };
-};
-
-template<actor_type A, iterable_assiative_type<A, std::uint64_t> T = std::unordered_map<A, std::uint64_t>> struct version_vector;
-
-template <typename T>
-concept crdt = cvrdt<T> && cmrdt<T> && requires(T t, version_vector<typename T::actor_t> v) {
-    { t.reset_remove(v) };
 };
 
 } // namespace crdt.

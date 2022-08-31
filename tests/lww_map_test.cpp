@@ -18,12 +18,16 @@ auto main() -> int {
     replica3.merge(replica2);
 
     auto delta = replica1.insert(10UL, std::string{"value 10"});
+    delta.merge(replica1.insert(10UL, std::string{"value 11"}));
     replica2.merge(delta);
 
     replica3.merge(replica1);
 
+    expect(replica1[10UL] == std::string{"value 11"});
     expect(replica2.contains(10UL));
     expect(replica3.contains(10UL));
+    expect(replica2[10UL] == std::string{"value 11"});
+    expect(replica3[10UL] == std::string{"value 11"});
   };
 
   "associative"_test = [] {

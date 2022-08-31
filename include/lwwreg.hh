@@ -12,11 +12,17 @@ namespace crdt {
 template <typename V> struct lwwreg {
   lwwreg() {}
   lwwreg(std::uint64_t replicaID) : _replicaID(replicaID) {}
+  lwwreg(std::uint64_t replicaID, V value)
+      : _replicaID(replicaID), _value(value),
+        _timestamp(std::chrono::high_resolution_clock::now()) {}
   lwwreg(const lwwreg<V> &) = default;
-  lwwreg(lwwreg<V> &&) = default;
+  lwwreg(lwwreg<V> &&) = delete;
 
-  lwwreg<V> &operator=(const lwwreg<V> &) = default;
-  lwwreg<V> &operator=(lwwreg<V> &&) = default;
+  auto operator=(const lwwreg<V> &other) -> lwwreg<V> & {
+    merge(other);
+    return (*this);
+  };
+  lwwreg<V> &operator=(lwwreg<V> &&) = delete;
 
   auto set(V value) noexcept -> /* delta */ lwwreg<V> {
     _value = value;

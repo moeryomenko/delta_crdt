@@ -45,6 +45,8 @@ struct awor_set {
     return _values.entries == other._values.entries;
   }
 
+  auto values() const noexcept -> std::set<V> {}
+
 private:
   std::uint64_t _replicaID;
   dot_kernel<V, _entries_map_type, _set_type, _map_type> _values;
