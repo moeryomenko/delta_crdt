@@ -2,16 +2,16 @@
 
 #include <cstdint>
 
-#include <mvreg.hh>
+#include <lwwreg.hh>
 
 auto main() -> int {
   using namespace boost::ut;
 
   "sync by delta equals sync by full state"_test = [] {
-    crdt::mvreg<std::uint64_t> replica1(1);
-    crdt::mvreg<std::uint64_t> replica2(2);
+    crdt::lwwreg<std::uint64_t> replica1(1);
+    crdt::lwwreg<std::uint64_t> replica2(2);
 
-    crdt::mvreg<std::uint64_t> replica3(2);
+    crdt::lwwreg<std::uint64_t> replica3(2);
     replica3.merge(replica2);
 
     auto delta = replica1.set(10UL);
@@ -20,14 +20,15 @@ auto main() -> int {
 
     replica3.merge(replica1);
 
+    expect(replica1.read() == 12UL);
     expect(replica1.read() == replica2.read());
     expect(replica1.read() == replica3.read());
   };
 
   "associative"_test = [] {
-    crdt::mvreg<std::uint64_t> replica1(1);
-    crdt::mvreg<std::uint64_t> replica2(2);
-    crdt::mvreg<std::uint64_t> replica3(3);
+    crdt::lwwreg<std::uint64_t> replica1(1);
+    crdt::lwwreg<std::uint64_t> replica2(2);
+    crdt::lwwreg<std::uint64_t> replica3(3);
 
     replica1.set(10UL);
     replica2.set(12UL);
@@ -45,13 +46,12 @@ auto main() -> int {
   };
 
   "commutative"_test = [] {
-    crdt::mvreg<std::uint64_t> replica1(1);
-    crdt::mvreg<std::uint64_t> replica2(2);
+    crdt::lwwreg<std::uint64_t> replica1(1);
+    crdt::lwwreg<std::uint64_t> replica2(2);
 
     replica1.set(10UL);
-    replica2.set(12UL);
-
     auto replica1_snapshot = replica1;
+    replica2.set(12UL);
 
     replica1.merge(replica2);
 
@@ -61,7 +61,7 @@ auto main() -> int {
   };
 
   "idempotent"_test = [] {
-    crdt::mvreg<std::uint64_t> replica1(1);
+    crdt::lwwreg<std::uint64_t> replica1(1);
 
     replica1.set(10UL);
 
