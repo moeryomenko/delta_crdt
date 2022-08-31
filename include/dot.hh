@@ -137,6 +137,16 @@ struct dot_kernel {
     }
     return delta;
   }
+
+  auto removeAll() noexcept
+      -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
+    dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
+    for (auto [d, _] : entries) {
+		delta.context.add(d);
+    }
+	entries.erase(entries.begin(), entries.end());
+	return delta;
+  }
 };
 
 template <std::equality_comparable T,

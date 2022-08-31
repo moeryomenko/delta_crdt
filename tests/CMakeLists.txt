@@ -17,3 +17,5 @@ crdt_test(NAME "pn_counter_test")
 crdt_test(NAME "gset_test")
 
 crdt_test(NAME "awor_set_test")
+
+crdt_test(NAME "mvreg_test")
