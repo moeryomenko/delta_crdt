@@ -31,3 +31,5 @@ crdt_test(NAME "dwflag_test")
 crdt_test(NAME "ewflag_test")
 
 crdt_test(NAME "causal_counter_test")
+
+crdt_test(NAME "rwor_set_test")
