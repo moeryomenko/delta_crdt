@@ -137,6 +137,17 @@ struct dot_kernel {
     return delta;
   }
 
+  auto remove(const dot &d) noexcept
+      -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
+    dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
+    auto it = entries.find(d);
+    if (it != entries.end()) {
+      delta.context = dot_context<_set_type, _map_type>{}.add(it->first);
+      entries.erase(it);
+    }
+    return delta;
+  }
+
   auto removeAll() noexcept
       -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;

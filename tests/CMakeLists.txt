@@ -29,3 +29,5 @@ crdt_test(NAME "lww_map_test")
 crdt_test(NAME "dwflag_test")
 
 crdt_test(NAME "ewflag_test")
+
+crdt_test(NAME "causal_counter_test")
