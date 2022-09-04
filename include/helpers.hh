@@ -1,22 +1,19 @@
 #ifndef HELPERS_H
 #define HELPERS_H
 
-#include <algorithm>
-#include <cstdint>
+#include <concepts>
 
 #include <crdt_traits.hh>
-#include <numeric>
-#include <unordered_map>
 
 namespace crdt {
 
 namespace helpers {
 
-template <crdt::arithmetic_value T> struct increment {
+template <crdt::incrementable_type T> struct increment {
   constexpr auto operator()(const T &arg) const -> T { return arg + 1; }
 };
 
-template <crdt::arithmetic_value T> struct max {
+template <std::totally_ordered T> struct max {
   max(T value) : _value(value) {}
 
   constexpr auto operator()(const T &arg) const -> T {

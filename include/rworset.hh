@@ -1,12 +1,12 @@
 #ifndef RWORSET_H
 #define RWORSET_H
 
-#include <algorithm>
 #include <compare>
+#include <iterator>
+#include <numeric>
 
 #include <crdt_traits.hh>
 #include <dot.hh>
-#include <iterator>
 
 namespace crdt {
 

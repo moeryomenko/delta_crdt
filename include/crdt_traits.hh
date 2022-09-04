@@ -2,6 +2,7 @@
 #define CRDT_TRAITS_H
 
 #include <concepts>
+#include <iterator>
 #include <functional>
 #include <type_traits>
 #include <optional>
@@ -51,15 +52,9 @@ template <typename T, typename F = std::hash<T>>
 concept actor_type = value_type<T> && std::copyable<T> && hashable<F, T>;
 
 template <typename T>
-concept arithmetic_value = actor_type<T> && requires(T a, T b) {
-	{ a + b } -> std::convertible_to<T>;
-	{ a - b } -> std::convertible_to<T>;
+concept incrementable_type = requires(T a) {
 	{ a++ } -> std::convertible_to<T>;
-	{ a-- } -> std::convertible_to<T>;
 	{ ++a } -> std::convertible_to<T>;
-	{ --b } -> std::convertible_to<T>;
-	{ a += b } -> std::convertible_to<T>;
-	{ a -= b } -> std::convertible_to<T>;
 	{ a + 1 } -> std::convertible_to<T>;
 };
 
