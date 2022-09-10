@@ -15,8 +15,11 @@ endif()
 
 add_subdirectory(include)
 
-include(CTest)
-enable_testing()
 if (CRDT_BUILD_TESTS)
+	find_package(ut REQUIRED)
+
+	include(CTest)
+	enable_testing()
+
 	add_subdirectory(tests)
 endif()

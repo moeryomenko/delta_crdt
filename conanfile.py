@@ -1,8 +1,16 @@
 from conans import ConanFile, CMake
 
 class DeltaCRDT(ConanFile):
+    name = "delta_crdt"
+    version = "0.0.1"
+    license = "Apache 2.0/MIT"
+    author = "Maxim Eryomenko <moeryomenko@gmail.com>"
+    url = "https://github.com/moeryomenko/delta_crdt"
+    description = "Implementation δ-based Conflict-free Replicated Data Types on C++20"
+    topics = ("δ-CRDT", "CRDT", "Replication")
+
     settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake"
+    generators = "cmake_find_package"
 
     options = {
         "build_tests": [True, False],
@@ -20,9 +28,9 @@ class DeltaCRDT(ConanFile):
             self.requires("boost-ext-ut/1.1.8")
 
     def build(self):
-        cmake = self._configure_cmake()
-        cmake.build()
         if self.options.build_tests:
+            cmake = self._configure_cmake()
+            cmake.build()
             cmake.test()
 
     def package(self):

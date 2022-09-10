@@ -1,2 +1,2 @@
-add_library(crdtxx INTERFACE)
-target_include_directories(crdtxx INTERFACE .)
+add_library(crdt_delta INTERFACE)
+target_include_directories(crdt_delta INTERFACE .)
