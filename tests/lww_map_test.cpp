@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-#include <lwwmap.hh>
+#include <delta_crdt/lwwmap.hh>
 
 auto main() -> int {
   using namespace boost::ut;

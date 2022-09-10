@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include <mvreg.hh>
+#include <delta_crdt/mvreg.hh>
 
 auto main() -> int {
   using namespace boost::ut;

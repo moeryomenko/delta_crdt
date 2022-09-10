@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <set>
 
-#include <crdt_traits.hh>
+#include <delta_crdt/crdt_traits.hh>
 
 namespace crdt {
 

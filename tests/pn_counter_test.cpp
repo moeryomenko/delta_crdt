@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <unordered_map>
 
-#include <pn_counter.hh>
+#include <delta_crdt/pn_counter.hh>
 
 auto main() -> int {
   using namespace boost::ut;

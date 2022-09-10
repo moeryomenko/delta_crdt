@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <unordered_map>
 
-#include <causal_counter.hh>
+#include <delta_crdt/causal_counter.hh>
 
 auto main() -> int {
   using namespace boost::ut;

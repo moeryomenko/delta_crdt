@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include <gset.hh>
+#include <delta_crdt/gset.hh>
 
 auto main() -> int {
   using namespace boost::ut;

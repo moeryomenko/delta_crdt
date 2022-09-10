@@ -6,7 +6,7 @@ function(crdt_test)
   string(CONCAT CRDT_TEST_SRC ${CRDT_TEST_NAME} ".cpp")
 
   add_executable(${CRDT_TEST_NAME} "${CRDT_TEST_SRC}")
-  target_link_libraries(${CRDT_TEST_NAME} PRIVATE crdt_delta boost::ut)
+  target_link_libraries(${CRDT_TEST_NAME} PRIVATE delta_crdt boost::ut)
   add_test(NAME ${SUIT_TEST} COMMAND ${CRDT_TEST_NAME})
 endfunction()
 

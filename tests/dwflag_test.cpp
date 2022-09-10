@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include <dwflag.hh>
+#include <delta_crdt/dwflag.hh>
 
 auto main() -> int {
   using namespace boost::ut;

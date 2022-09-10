@@ -4,10 +4,10 @@
 #include <algorithm>
 #include <compare>
 
-#include <awormap.hh>
-#include <crdt_traits.hh>
-#include <dot.hh>
-#include <lwwreg.hh>
+#include <delta_crdt/awormap.hh>
+#include <delta_crdt/crdt_traits.hh>
+#include <delta_crdt/dot.hh>
+#include <delta_crdt/lwwreg.hh>
 
 namespace crdt {
 

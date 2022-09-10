@@ -10,8 +10,8 @@
 #include <unordered_map>
 #include <utility>
 
-#include <crdt_traits.hh>
-#include <helpers.hh>
+#include <delta_crdt/crdt_traits.hh>
+#include <delta_crdt/helpers.hh>
 
 namespace crdt {
 

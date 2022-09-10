@@ -1,7 +1,7 @@
 #ifndef PN_COUNTER_H
 #define PN_COUNTER_H
 
-#include <gcounter.hh>
+#include <delta_crdt/gcounter.hh>
 
 namespace crdt {
 

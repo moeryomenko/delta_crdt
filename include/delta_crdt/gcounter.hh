@@ -3,12 +3,11 @@
 
 #include <algorithm>
 #include <cstdint>
-
 #include <numeric>
 #include <unordered_map>
 
-#include <crdt_traits.hh>
-#include <helpers.hh>
+#include <delta_crdt/crdt_traits.hh>
+#include <delta_crdt/helpers.hh>
 
 namespace crdt {
 
