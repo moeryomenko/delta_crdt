@@ -24,12 +24,9 @@ For build you need:
 - gcc 10+ or clang 10+
 
 ```sh
-# configure project and download dependencies.
-$ cmake -GNinja -H. -Bbuild -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release
-# build
-$ cmake --build build
-# run test
-$ ctest --test-dir build
+$ mkdri build && cd build
+$ conan intall .. -o build_tests=True
+$ conan build ..
 ```
 
 ## Usage
