@@ -14,24 +14,30 @@ if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 endif()
 
 add_library(delta_crdt INTERFACE)
-target_include_directories(delta_crdt INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-target_include_directories(delta_crdt SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>)
+target_include_directories(
+  delta_crdt INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+target_include_directories(
+  delta_crdt SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>)
 
 # Setup package config
 include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+
 set(CONFIG_PACKAGE_INSTALL_DIR lib/cmake/delta_crdt)
 
 set(DELTA_CRDT_CMAKE_SIZEOF_VOID_P ${CMAKE_SIZEOF_VOID_P})
 set(CMAKE_SIZEOF_VOID_P "")
 write_basic_package_version_file(
-  ${CMAKE_CURRENT_BINARY_DIR}/delta_crdt-config-version.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/cmake/delta_crdt-config-version.cmake
   VERSION 0.0.1
-  COMPATIBILITY SameMajorVersion
-)
+  COMPATIBILITY SameMajorVersion)
 set(CMAKE_SIZEOF_VOID_P ${DELTA_CRDT_CMAKE_SIZEOF_VOID_P})
 
 # Install target
-install(DIRECTORY include/delta_crdt DESTINATION include)
+install(DIRECTORY include/${PROJECT_NAME}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 if(CRDT_BUILD_TESTS)
   find_package(ut REQUIRED)
