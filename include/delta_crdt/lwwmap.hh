@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <compare>
+#include <set>
+#include <unordered_map>
 
 #include <delta_crdt/awormap.hh>
 #include <delta_crdt/crdt_traits.hh>
@@ -20,7 +22,8 @@ template <std::equality_comparable K, typename V,
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct lwwmap {
-  lwwmap(std::uint64_t replicaID) : _replicaID(replicaID), _map(replicaID){};
+  explicit lwwmap(std::uint64_t replicaID)
+      : _replicaID(replicaID), _map(replicaID) {}
 
   auto operator[](K key) noexcept -> V { return _map[key].read(); }
 
@@ -54,7 +57,7 @@ private:
          awor_map<K, lwwreg<V>, _kv_map_type, _entries_map_type, _set_type,
                   _map_type>
              delta)
-      : _replicaID(replicaID), _map(delta){};
+      : _replicaID(replicaID), _map(delta) {}
 };
 
 } // namespace crdt.

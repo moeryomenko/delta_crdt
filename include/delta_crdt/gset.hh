@@ -11,7 +11,7 @@ namespace crdt {
 
 template <std::totally_ordered T, set_type<T> _set_type = std::set<T>>
 struct gset {
-  gset(std::uint64_t replicaID) : _replicaID(replicaID) {}
+  explicit gset(std::uint64_t replicaID) : _replicaID(replicaID) {}
 
   auto add(T element) -> gset<T, _set_type> {
     _set.insert(element);

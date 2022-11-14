@@ -1,6 +1,8 @@
 #ifndef PN_COUNTER_H
 #define PN_COUNTER_H
 
+#include <unordered_map>
+
 #include <delta_crdt/gcounter.hh>
 
 namespace crdt {
@@ -8,7 +10,7 @@ namespace crdt {
 template <iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct pn_counter {
-  pn_counter(std::uint64_t replicaID)
+  explicit pn_counter(std::uint64_t replicaID)
       : _replicaID(replicaID), _inc(replicaID), _dec(replicaID) {}
 
   auto operator++() noexcept -> /* delta */ pn_counter<_map_type> {

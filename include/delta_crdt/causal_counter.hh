@@ -5,6 +5,8 @@
 #include <compare>
 #include <iterator>
 #include <numeric>
+#include <set>
+#include <unordered_map>
 
 #include <delta_crdt/crdt_traits.hh>
 #include <delta_crdt/dot.hh>
@@ -17,7 +19,7 @@ template <iterable_assiative_type<dot, std::uint64_t> _entries_map_type =
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct causal_counter {
-  causal_counter(std::uint64_t replicaID) : _replicaID(replicaID) {}
+  explicit causal_counter(std::uint64_t replicaID) : _replicaID(replicaID) {}
 
   auto operator++() noexcept
       -> causal_counter<_entries_map_type, _set_type, _map_type> {
@@ -89,7 +91,7 @@ private:
   causal_counter(
       std::uint64_t replicaID,
       dot_kernel<std::uint64_t, _entries_map_type, _set_type, _map_type> delta)
-      : _replicaID(replicaID), _value(delta){};
+      : _replicaID(replicaID), _value(delta) {}
 };
 
 } // namespace crdt.

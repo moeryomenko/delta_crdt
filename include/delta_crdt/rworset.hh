@@ -4,6 +4,9 @@
 #include <compare>
 #include <iterator>
 #include <numeric>
+#include <set>
+#include <unordered_map>
+#include <utility>
 
 #include <delta_crdt/crdt_traits.hh>
 #include <delta_crdt/dot.hh>
@@ -17,7 +20,7 @@ template <std::equality_comparable V,
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct rwor_set {
-  rwor_set(std::uint64_t replicaID) : _replicaID(replicaID){};
+  explicit rwor_set(std::uint64_t replicaID) : _replicaID(replicaID) {}
 
   auto insert(V value) noexcept
       -> /* delta */ rwor_set<V, _entries_map_type, _set_type, _map_type> {
@@ -93,7 +96,7 @@ private:
       std::uint64_t replicaID,
       dot_kernel<std::pair<V, bool>, _entries_map_type, _set_type, _map_type>
           delta)
-      : _replicaID(replicaID), _values(delta){};
+      : _replicaID(replicaID), _values(delta) {}
 };
 
 } // namespace crdt.

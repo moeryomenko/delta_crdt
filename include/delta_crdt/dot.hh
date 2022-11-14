@@ -80,7 +80,7 @@ auto compact(dot_context<_set_type, _map_type> ctx) noexcept
                    return false;
                  } else {
                    return true;
-                 };
+                 }
                });
   return _ctx;
 }

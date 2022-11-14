@@ -11,7 +11,7 @@ namespace crdt {
 
 template <typename V> struct lwwreg {
   lwwreg() {}
-  lwwreg(std::uint64_t replicaID) : _replicaID(replicaID) {}
+  explicit lwwreg(std::uint64_t replicaID) : _replicaID(replicaID) {}
   lwwreg(std::uint64_t replicaID, V value)
       : _replicaID(replicaID), _value(value),
         _timestamp(std::chrono::high_resolution_clock::now()) {}

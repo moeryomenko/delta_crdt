@@ -1,6 +1,9 @@
 #ifndef EWFLAG_H
 #define EWFLAG_H
 
+#include <set>
+#include <unordered_map>
+
 #include <delta_crdt/crdt_traits.hh>
 #include <delta_crdt/dot.hh>
 
@@ -12,7 +15,7 @@ template <iterable_assiative_type<dot, bool> _entries_map_type =
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct ewflag {
-  ewflag(std::uint64_t replicaID) : _replicaID(replicaID) {}
+  explicit ewflag(std::uint64_t replicaID) : _replicaID(replicaID) {}
 
   auto enable() noexcept
       -> /* delta */ ewflag<_entries_map_type, _set_type, _map_type> {

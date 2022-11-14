@@ -14,7 +14,7 @@ namespace crdt {
 template <iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct gcounter {
-  gcounter(std::uint64_t replicaID) : _replicaID(replicaID) {
+  explicit gcounter(std::uint64_t replicaID) : _replicaID(replicaID) {
     _values[replicaID] = 0;
   }
 

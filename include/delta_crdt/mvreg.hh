@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <compare>
 #include <iterator>
+#include <set>
+#include <unordered_map>
 
 #include <delta_crdt/crdt_traits.hh>
 #include <delta_crdt/dot.hh>
@@ -44,7 +46,7 @@ private:
 
   mvreg(std::uint64_t replicaID,
         dot_kernel<V, _entries_map_type, _set_type, _map_type> delta)
-      : _replicaID(replicaID), _values(delta){};
+      : _replicaID(replicaID), _values(delta) {}
 };
 
 } // namespace crdt.
