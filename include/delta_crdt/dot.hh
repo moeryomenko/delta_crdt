@@ -126,14 +126,13 @@ struct dot_kernel {
   auto remove(T value) noexcept
       -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
-    for (auto it = entries.begin(); it != entries.end();) {
-      if (it->second == value) {
-        delta.context = dot_context<_set_type, _map_type>{}.add(it->first);
-        it = entries.erase(it);
-      } else {
-        ++it;
+    std::erase_if(entries, [&value, &delta](const auto &it) {
+      if (it.second == value) {
+        delta.context = dot_context<>{}.add(it.first);
+        return true;
       }
-    }
+      return false;
+    });
     return delta;
   }
 
@@ -142,7 +141,7 @@ struct dot_kernel {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
     auto it = entries.find(d);
     if (it != entries.end()) {
-      delta.context = dot_context<_set_type, _map_type>{}.add(it->first);
+      delta.context = dot_context<>{}.add(it->first);
       entries.erase(it);
     }
     return delta;
