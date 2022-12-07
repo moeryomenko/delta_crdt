@@ -51,13 +51,9 @@ struct rwor_map {
       if (_keys.contains(d))
         _entries[d] = value;
     }
-    for (auto it = _entries.begin(); it != _entries.end();) {
-      if (_keys.contains(it->first)) {
-        ++it;
-      } else {
-        it = _entries.erase(it);
-      }
-    }
+    std::erase_if(_entries, [this](const auto &it) {
+      return !this->_keys.contains(it.first);
+    });
   }
 
   auto contains(K key) const noexcept -> bool {

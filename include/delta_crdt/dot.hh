@@ -39,17 +39,41 @@ struct dot_context {
     dot_cloud.insert(d);
     return *this;
   }
-};
 
-template <set_type<dot> _set_type = std::set<dot>,
-          iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
-              std::unordered_map<std::uint64_t, std::uint64_t>>
-auto contains(dot d, dot_context<_set_type, _map_type> ctx) noexcept -> bool {
-  if (ctx.clock.vector.contains(d.replicaID) || ctx.dot_cloud.contains(d)) {
-    return true;
+  auto compact() noexcept -> dot_context<_set_type, _map_type> {
+    _map_type clock;
+    std::erase_if(this->dot_cloud, [&clock, this](const auto &d) {
+      auto counter =
+          helpers::get_or_default(this->clock.vector, d.replicaID, 0UL);
+      if (d.counter == counter + 1) {
+        clock[d.replicaID] = d.counter;
+        return true;
+      } else if (d.counter <= counter) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    this->clock.vector = clock;
+
+    return *this;
   }
-  return false;
-}
+
+  auto merge(dot_context<_set_type, _map_type> a) noexcept
+      -> dot_context<_set_type, _map_type> {
+    for (const auto [r, c] : a.clock.vector) {
+      upsert(r, c, helpers::max(c), this->clock.vector);
+    }
+
+    this->dot_cloud.insert(a.dot_cloud.begin(), a.dot_cloud.end());
+    return this->compact();
+  }
+
+  auto contains(dot d) const noexcept -> bool {
+    return this->clock.vector.contains(d.replicaID) ||
+           this->dot_cloud.contains(d);
+  }
+};
 
 template <set_type<dot> _set_type = std::set<dot>,
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
@@ -60,45 +84,6 @@ auto next_dot(std::uint64_t replicaID,
   auto value = upsert(replicaID, 1UL, helpers::increment<std::uint64_t>{},
                       ctx.clock.vector);
   return {dot{.replicaID = replicaID, .counter = value}, ctx};
-}
-
-template <set_type<dot> _set_type = std::set<dot>,
-          iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
-              std::unordered_map<std::uint64_t, std::uint64_t>>
-auto compact(dot_context<_set_type, _map_type> ctx) noexcept
-    -> dot_context<_set_type, _map_type> {
-  dot_context<_set_type, _map_type> _ctx;
-  std::copy_if(ctx.dot_cloud.begin(), ctx.dot_cloud.end(),
-               std::inserter(_ctx.dot_cloud, _ctx.dot_cloud.end()),
-               [&clock = ctx.clock.vector, &ctx = _ctx](const auto &dot) {
-                 auto counter =
-                     helpers::get_or_default(clock, dot.replicaID, 0UL);
-                 if (dot.counter == counter + 1) {
-                   ctx.clock.vector[dot.replicaID] = dot.counter;
-                   return false;
-                 } else if (dot.counter <= counter) {
-                   return false;
-                 } else {
-                   return true;
-                 }
-               });
-  return _ctx;
-}
-
-template <set_type<dot> _set_type = std::set<dot>,
-          iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
-              std::unordered_map<std::uint64_t, std::uint64_t>>
-auto merge(dot_context<_set_type, _map_type> a,
-           dot_context<_set_type, _map_type> b)
-    -> dot_context<_set_type, _map_type> {
-
-  dot_context<_set_type, _map_type> ctx{.clock = b.clock,
-                                        .dot_cloud = b.dot_cloud};
-  for (const auto [r, c] : a.clock.vector) {
-    upsert(r, c, helpers::max(c), ctx.clock.vector);
-  }
-  ctx.dot_cloud.insert(a.dot_cloud.begin(), a.dot_cloud.end());
-  return compact(ctx);
 }
 
 template <std::equality_comparable T,
@@ -119,7 +104,7 @@ struct dot_kernel {
     context = ctx;
 
     delta.entries[d] = value;
-    delta.context = compact(dot_context<_set_type, _map_type>{}.add(d));
+    delta.context = dot_context<_set_type, _map_type>{}.add(d).compact();
     return delta;
   }
 
@@ -169,20 +154,14 @@ auto merge(dot_kernel<T, _entries_map_type, _set_type, _map_type> a,
     -> dot_kernel<T, _entries_map_type, _set_type, _map_type> {
   std::copy_if(b.entries.begin(), b.entries.end(),
                std::inserter(a.entries, a.entries.end()), [&a](const auto &e) {
-                 if (!(a.entries.contains(e.first) ||
-                       crdt::contains(e.first, a.context)))
-                   return true;
-                 else
-                   return false;
+                 return !(a.entries.contains(e.first) ||
+                          a.context.contains(e.first));
                });
-  for (auto it = a.entries.begin(); it != a.entries.end();) {
-    if (crdt::contains(it->first, b.context) && !b.entries.contains(it->first))
-      it = a.entries.erase(it);
-    else
-      it++;
-  }
+  std::erase_if(a.entries, [&b](const auto &it) {
+    return b.context.contains(it.first) && !b.entries.contains(it.first);
+  });
   return dot_kernel<T, _entries_map_type, _set_type, _map_type>{
-      .context = merge(a.context, b.context), .entries = a.entries};
+      .context = a.context.merge(b.context), .entries = a.entries};
 }
 
 } // namespace crdt.
