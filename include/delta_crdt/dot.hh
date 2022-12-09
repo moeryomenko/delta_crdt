@@ -73,18 +73,15 @@ struct dot_context {
     return this->clock.vector.contains(d.replicaID) ||
            this->dot_cloud.contains(d);
   }
-};
 
-template <set_type<dot> _set_type = std::set<dot>,
-          iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
-              std::unordered_map<std::uint64_t, std::uint64_t>>
-auto next_dot(std::uint64_t replicaID,
-              dot_context<_set_type, _map_type> ctx) noexcept
-    -> std::pair<dot, dot_context<_set_type, _map_type>> {
-  auto value = upsert(replicaID, 1UL, helpers::increment<std::uint64_t>{},
-                      ctx.clock.vector);
-  return {dot{.replicaID = replicaID, .counter = value}, ctx};
-}
+  auto next_dot(std::uint64_t replicaID) -> dot {
+    return dot{
+        .replicaID = replicaID,
+        .counter = upsert(replicaID, 1UL, helpers::increment<std::uint64_t>{},
+                          this->clock.vector),
+    };
+  }
+};
 
 template <std::equality_comparable T,
           iterable_assiative_type<dot, T> _entries_map_type =
@@ -99,9 +96,8 @@ struct dot_kernel {
   auto add(std::uint64_t replicaID, T value) noexcept
       -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
-    auto [d, ctx] = next_dot(replicaID, context);
-    entries[d] = value;
-    context = ctx;
+	auto d = this->context.next_dot(replicaID);
+	this->entries[d] = value;
 
     delta.entries[d] = value;
     delta.context = dot_context<_set_type, _map_type>{}.add(d).compact();
