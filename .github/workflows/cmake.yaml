@@ -1,0 +1,42 @@
+name: CI
+on:
+  push:
+    tags:
+      - '**'
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+  pull_request:
+env:
+  BUILD_TYPE: Debug
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install conan.io
+        shell: bash
+        run: pip install conan
+      - name: Install GCC 10
+        shell: bash
+        run: sudo apt-get install -y gcc-10 g++-10
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v1.8
+        with:
+          cmake-version: '3.20.x'
+      - name: Configure CMake
+        shell: bash
+        working-directory: ${{github.workspace}}
+        run: cmake -S$GITHUB_WORKSPACE -Bbuild -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        env:
+          CC: gcc-10
+          CXX: g++-10
+      - name: Build
+        working-directory: ${{github.workspace}}/build
+        shell: bash
+        run: conan install .. -o build_tests=True
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        shell: bash
+        run: conan build ..
