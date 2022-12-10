@@ -23,13 +23,13 @@ struct awor_set {
 
   auto insert(V value) noexcept
       -> awor_set<V, _entries_map_type, _set_type, _map_type> {
-    auto remove_delta = _values.remove(value);
-    auto add_delta = _values.add(_replicaID, value);
+    auto remove_delta = _values.erase(value);
+    auto add_delta = _values.insert(_replicaID, value);
     return awor_set(_replicaID, crdt::merge(remove_delta, add_delta));
   }
 
-  auto remove(V value) noexcept {
-    return awor_set(_replicaID, _values.remove(value));
+  auto erase(V value) noexcept {
+    return awor_set(_replicaID, _values.erase(value));
   }
 
   void merge(awor_set<V, _entries_map_type, _set_type, _map_type> delta) {

@@ -37,7 +37,7 @@ struct awor_map {
   auto erase(K key) noexcept
       -> /* delta */ awor_map<K, V, _kv_map_type, _entries_map_type, _set_type,
                               _map_type> {
-    auto keys_delta = _keys.remove(key);
+    auto keys_delta = _keys.erase(key);
     _entries.erase(key);
     return awor_map(_replicaID, keys_delta);
   }

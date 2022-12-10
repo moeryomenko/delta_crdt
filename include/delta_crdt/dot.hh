@@ -35,7 +35,7 @@ struct dot_context {
   vector_clock<_map_type> clock;
   _set_type dot_cloud;
 
-  auto add(dot d) noexcept -> dot_context<_set_type, _map_type> {
+  auto insert(dot d) noexcept -> dot_context<_set_type, _map_type> {
     dot_cloud.insert(d);
     return *this;
   }
@@ -93,23 +93,23 @@ struct dot_kernel {
   dot_context<_set_type, _map_type> context;
   _entries_map_type entries;
 
-  auto add(std::uint64_t replicaID, T value) noexcept
+  auto insert(std::uint64_t replicaID, T value) noexcept
       -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
 	auto d = this->context.next_dot(replicaID);
 	this->entries[d] = value;
 
     delta.entries[d] = value;
-    delta.context = dot_context<_set_type, _map_type>{}.add(d).compact();
+    delta.context = dot_context<_set_type, _map_type>{}.insert(d).compact();
     return delta;
   }
 
-  auto remove(T value) noexcept
+  auto erase(T value) noexcept
       -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
     std::erase_if(entries, [&value, &delta](const auto &it) {
       if (it.second == value) {
-        delta.context = dot_context<>{}.add(it.first);
+        delta.context = dot_context<>{}.insert(it.first);
         return true;
       }
       return false;
@@ -117,22 +117,22 @@ struct dot_kernel {
     return delta;
   }
 
-  auto remove(const dot &d) noexcept
+  auto erase(const dot &d) noexcept
       -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
     auto it = entries.find(d);
     if (it != entries.end()) {
-      delta.context = dot_context<>{}.add(it->first);
+      delta.context = dot_context<>{}.insert(it->first);
       entries.erase(it);
     }
     return delta;
   }
 
-  auto removeAll() noexcept
+  auto clear() noexcept
       -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
     for (auto [d, _] : entries) {
-      delta.context.add(d);
+      delta.context.insert(d);
     }
     entries.erase(entries.begin(), entries.end());
     return delta;

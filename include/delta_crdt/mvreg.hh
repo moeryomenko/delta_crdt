@@ -23,8 +23,8 @@ struct mvreg {
 
   auto set(V value) noexcept
       -> /* delta */ mvreg<V, _entries_map_type, _set_type, _map_type> {
-    auto delta = _values.removeAll();
-    delta = crdt::merge(delta, _values.add(_replicaID, value));
+    auto delta = _values.clear();
+    delta = crdt::merge(delta, _values.insert(_replicaID, value));
     return mvreg(_replicaID, delta);
   }
 

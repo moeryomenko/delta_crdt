@@ -19,14 +19,14 @@ struct dwflag {
 
   auto enable() noexcept
       -> /* delta */ dwflag<_entries_map_type, _set_type, _map_type> {
-    return dwflag(_replicaID, _kernel.remove(false));
+    return dwflag(_replicaID, _kernel.erase(false));
   }
 
   auto disable() noexcept
       -> /* delta */ dwflag<_entries_map_type, _set_type, _map_type> {
-    auto remove_delta = _kernel.remove(false);
+    auto remove_delta = _kernel.erase(false);
     return dwflag(_replicaID,
-                  crdt::merge(remove_delta, _kernel.add(_replicaID, false)));
+                  crdt::merge(remove_delta, _kernel.insert(_replicaID, false)));
   }
 
   auto is_enaled() const noexcept -> bool { return read() == true; }

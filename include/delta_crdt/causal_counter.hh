@@ -47,10 +47,10 @@ struct causal_counter {
                      });
     if (it != _value.entries.end()) {
       delta_counter._value =
-          crdt::merge(delta_counter._value, _value.remove(it->first));
+          crdt::merge(delta_counter._value, _value.erase(it->first));
     }
     delta_counter._value =
-        crdt::merge(delta_counter._value, _value.add(_replicaID, base + value));
+        crdt::merge(delta_counter._value, _value.insert(_replicaID, base + value));
     return delta_counter;
   }
 

@@ -83,12 +83,12 @@ private:
   auto update_entry(V value, bool enable) noexcept
       -> /* delta */ rwor_set<V, _entries_map_type, _set_type, _map_type> {
     rwor_set<V, _entries_map_type, _set_type, _map_type> delta(_replicaID);
-    auto observed_add_remove_delta = _values.remove(std::pair{value, true});
-    auto observed_rm_remove_delta = _values.remove(std::pair{value, false});
+    auto observed_add_remove_delta = _values.erase(std::pair{value, true});
+    auto observed_rm_remove_delta = _values.erase(std::pair{value, false});
     delta._values =
         crdt::merge(observed_add_remove_delta, observed_rm_remove_delta);
     delta._values =
-        crdt::merge(delta._values, _values.add(_replicaID, {value, enable}));
+        crdt::merge(delta._values, _values.insert(_replicaID, {value, enable}));
     return delta;
   }
 
