@@ -39,7 +39,7 @@ auto get_or_default(_map_type _map, _key_type _key, _value_type _value)
 
 template <typename K, typename V, typename T,
           iterable_assiative_type<K, V> _map_type>
-auto upsert(K key, V val, T fn, _map_type &map) noexcept -> V {
+auto upsert(_map_type &map, K key, V val, T fn) noexcept -> V {
   if (auto it = map.find(key); it != map.end()) {
     auto val = fn(it->second);
     it->second = val;

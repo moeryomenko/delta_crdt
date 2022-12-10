@@ -19,16 +19,16 @@ struct gcounter {
   }
 
   auto operator++() noexcept -> /* delta */ gcounter<_map_type> {
-    auto value =
-        upsert(_replicaID, 1UL, helpers::increment<std::uint64_t>{}, _values);
+    auto value = upsert(this->_values, _replicaID, 1UL,
+                        helpers::increment<std::uint64_t>{});
     return gcounter(_replicaID, value);
   }
 
   void merge(gcounter<_map_type> other) noexcept {
     std::for_each(other._values.begin(), other._values.end(),
                   [this](const auto &dot) {
-                    upsert(dot.first, dot.second, helpers::max(dot.second),
-                           this->_values);
+                    upsert(this->_values, dot.first, dot.second,
+                           helpers::max(dot.second));
                   });
   }
 

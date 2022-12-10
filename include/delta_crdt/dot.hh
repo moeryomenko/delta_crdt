@@ -62,7 +62,7 @@ struct dot_context {
   auto merge(dot_context<_set_type, _map_type> a) noexcept
       -> dot_context<_set_type, _map_type> {
     for (const auto [r, c] : a.clock.vector) {
-      upsert(r, c, helpers::max(c), this->clock.vector);
+      upsert(this->clock.vector, r, c, helpers::max(c));
     }
 
     this->dot_cloud.insert(a.dot_cloud.begin(), a.dot_cloud.end());
@@ -77,8 +77,8 @@ struct dot_context {
   auto next_dot(std::uint64_t replicaID) -> dot {
     return dot{
         .replicaID = replicaID,
-        .counter = upsert(replicaID, 1UL, helpers::increment<std::uint64_t>{},
-                          this->clock.vector),
+        .counter = upsert(this->clock.vector, replicaID, 1UL,
+                          helpers::increment<std::uint64_t>{}),
     };
   }
 };
@@ -96,8 +96,8 @@ struct dot_kernel {
   auto insert(std::uint64_t replicaID, T value) noexcept
       -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
-	auto d = this->context.next_dot(replicaID);
-	this->entries[d] = value;
+    auto d = this->context.next_dot(replicaID);
+    this->entries[d] = value;
 
     delta.entries[d] = value;
     delta.context = dot_context<_set_type, _map_type>{}.insert(d).compact();
@@ -120,10 +120,8 @@ struct dot_kernel {
   auto erase(const dot &d) noexcept
       -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
-    auto it = entries.find(d);
-    if (it != entries.end()) {
-      delta.context = dot_context<>{}.insert(it->first);
-      entries.erase(it);
+    if (this->entries.erase(d)) {
+      delta.context = dot_context<>{}.insert(d);
     }
     return delta;
   }
