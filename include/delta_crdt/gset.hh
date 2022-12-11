@@ -11,14 +11,16 @@ namespace crdt {
 
 template <std::totally_ordered T, set_type<T> _set_type = std::set<T>>
 struct gset {
+  using self_type = gset<T, _set_type>;
+
   explicit gset(std::uint64_t replicaID) : _replicaID(replicaID) {}
 
-  auto add(T element) -> gset<T, _set_type> {
+  auto add(T element) -> self_type {
     _set.insert(element);
     return gset(_replicaID, {element});
   }
 
-  void merge(gset<T, _set_type> delta) noexcept {
+  void merge(const self_type &delta) noexcept {
     _set.insert(delta._set.begin(), delta._set.end());
   }
 

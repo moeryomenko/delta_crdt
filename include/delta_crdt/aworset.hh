@@ -19,10 +19,11 @@ template <std::equality_comparable V,
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct awor_set {
+  using self_type = awor_set<V, _entries_map_type, _set_type, _map_type>;
+
   explicit awor_set(std::uint64_t replicaID) : _replicaID(replicaID) {}
 
-  auto insert(V value) noexcept
-      -> awor_set<V, _entries_map_type, _set_type, _map_type> {
+  auto insert(V value) noexcept -> self_type {
     auto remove_delta = _values.erase(value);
     auto add_delta = _values.insert(_replicaID, value);
     return awor_set(_replicaID, crdt::merge(remove_delta, add_delta));
@@ -32,7 +33,7 @@ struct awor_set {
     return awor_set(_replicaID, _values.erase(value));
   }
 
-  void merge(awor_set<V, _entries_map_type, _set_type, _map_type> delta) {
+  void merge(self_type delta) {
     _values = crdt::merge(_values, delta._values);
   }
 

@@ -10,20 +10,22 @@ namespace crdt {
 template <iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct pn_counter {
+  using self_type = pn_counter<_map_type>;
+
   explicit pn_counter(std::uint64_t replicaID)
       : _replicaID(replicaID), _inc(replicaID), _dec(replicaID) {}
 
-  auto operator++() noexcept -> /* delta */ pn_counter<_map_type> {
+  auto operator++() noexcept -> /* delta */ self_type {
     auto inc_delta = ++_inc;
     return pn_counter<_map_type>(_replicaID, inc_delta, gcounter(_replicaID));
   }
 
-  auto operator--() noexcept -> /* delta */ pn_counter<_map_type> {
+  auto operator--() noexcept -> /* delta */ self_type {
     auto dec_delta = ++_dec;
     return pn_counter<_map_type>(_replicaID, gcounter(_replicaID), dec_delta);
   }
 
-  void merge(pn_counter<_map_type> other) noexcept {
+  void merge(const self_type &other) noexcept {
     _inc.merge(other._inc);
     _dec.merge(other._dec);
   }

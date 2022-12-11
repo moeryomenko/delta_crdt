@@ -19,62 +19,48 @@ template <iterable_assiative_type<dot, std::uint64_t> _entries_map_type =
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct causal_counter {
+  using self_type = causal_counter<_entries_map_type, _set_type, _map_type>;
+
   explicit causal_counter(std::uint64_t replicaID) : _replicaID(replicaID) {}
 
-  auto operator++() noexcept
-      -> causal_counter<_entries_map_type, _set_type, _map_type> {
-    return (*this) += 1;
-  }
+  auto operator++() noexcept -> self_type { return (*this) += 1; }
 
-  auto operator--() noexcept
-      -> causal_counter<_entries_map_type, _set_type, _map_type> {
-    return (*this) -= 1;
-  }
+  auto operator--() noexcept -> self_type { return (*this) -= 1; }
 
-  auto operator+(std::uint64_t value) noexcept
-      -> causal_counter<_entries_map_type, _set_type, _map_type> {
-    causal_counter<_entries_map_type, _set_type, _map_type> delta_counter(
-        _replicaID);
+  auto operator+(std::uint64_t value) noexcept -> self_type {
+    self_type delta_counter(_replicaID);
     std::uint64_t base{0UL};
-    auto it =
-        std::find_if(_value.entries.begin(), _value.entries.end(),
-                     [&_replicaID = this->_replicaID, &base](const auto &it) {
-                       if (it.first.replicaID == _replicaID) {
-                         base = std::max(base, it.second);
-                         return true;
-                       }
-                       return false;
-                     });
+    auto it = std::find_if(_value.entries.begin(), _value.entries.end(),
+                           [&_replicaID = this->_replicaID](const auto &it) {
+                             return it.first.replicaID == _replicaID;
+                           });
     if (it != _value.entries.end()) {
+      base = std::max(base, it->second);
       delta_counter._value =
           crdt::merge(delta_counter._value, _value.erase(it->first));
     }
-    delta_counter._value =
-        crdt::merge(delta_counter._value, _value.insert(_replicaID, base + value));
+    delta_counter._value = crdt::merge(delta_counter._value,
+                                       _value.insert(_replicaID, base + value));
     return delta_counter;
   }
 
-  auto operator-(std::uint64_t value) noexcept
-      -> causal_counter<_entries_map_type, _set_type, _map_type> {
+  auto operator-(std::uint64_t value) noexcept -> self_type {
     return (*this) + (0 - value);
   }
 
-  auto operator+=(std::uint64_t value) noexcept
-      -> causal_counter<_entries_map_type, _set_type, _map_type> {
+  auto operator+=(std::uint64_t value) noexcept -> self_type {
     auto delta = (*this) + value;
     merge(delta);
     return delta;
   }
 
-  auto operator-=(std::uint64_t value) noexcept
-      -> causal_counter<_entries_map_type, _set_type, _map_type> {
+  auto operator-=(std::uint64_t value) noexcept -> self_type {
     auto delta = (*this) - value;
     merge(delta);
     return delta;
   }
 
-  void merge(const causal_counter<_entries_map_type, _set_type, _map_type>
-                 &delta) noexcept {
+  void merge(const self_type &delta) noexcept {
     _value = crdt::merge(_value, delta._value);
   }
 

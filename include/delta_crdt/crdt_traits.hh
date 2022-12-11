@@ -11,7 +11,7 @@
 
 namespace crdt {
 
-template <typename container_type, typename _key, typename _mapped_type> 
+template <typename container_type, typename _key, typename _mapped_type>
 concept associative_type = std::is_same_v<_key, typename container_type::key_type>
                         && std::is_same_v<_mapped_type, typename container_type::mapped_type>
 						&& requires(container_type t, typename container_type::key_type key) {

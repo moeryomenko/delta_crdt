@@ -14,17 +14,19 @@ namespace crdt {
 template <iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct gcounter {
+  using self_type = gcounter<_map_type>;
+
   explicit gcounter(std::uint64_t replicaID) : _replicaID(replicaID) {
     _values[replicaID] = 0;
   }
 
-  auto operator++() noexcept -> /* delta */ gcounter<_map_type> {
+  auto operator++() noexcept -> /* delta */ self_type {
     auto value = upsert(this->_values, _replicaID, 1UL,
                         helpers::increment<std::uint64_t>{});
     return gcounter(_replicaID, value);
   }
 
-  void merge(gcounter<_map_type> other) noexcept {
+  void merge(const self_type &other) noexcept {
     std::for_each(other._values.begin(), other._values.end(),
                   [this](const auto &dot) {
                     upsert(this->_values, dot.first, dot.second,

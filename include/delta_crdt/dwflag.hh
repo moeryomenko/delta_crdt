@@ -15,15 +15,15 @@ template <iterable_assiative_type<dot, bool> _entries_map_type =
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct dwflag {
+  using self_type = dwflag<_entries_map_type, _set_type, _map_type>;
+
   explicit dwflag(std::uint64_t replicaID) : _replicaID(replicaID) {}
 
-  auto enable() noexcept
-      -> /* delta */ dwflag<_entries_map_type, _set_type, _map_type> {
+  auto enable() noexcept -> /* delta */ self_type {
     return dwflag(_replicaID, _kernel.erase(false));
   }
 
-  auto disable() noexcept
-      -> /* delta */ dwflag<_entries_map_type, _set_type, _map_type> {
+  auto disable() noexcept -> /* delta */ self_type {
     auto remove_delta = _kernel.erase(false);
     return dwflag(_replicaID,
                   crdt::merge(remove_delta, _kernel.insert(_replicaID, false)));
@@ -33,12 +33,11 @@ struct dwflag {
 
   auto is_disaled() const noexcept -> bool { return read() == false; }
 
-  void merge(dwflag<_entries_map_type, _set_type, _map_type> delta) noexcept {
+  void merge(const self_type &delta) noexcept {
     _kernel = crdt::merge(_kernel, delta._kernel);
   }
 
-  auto operator==(const dwflag<_entries_map_type, _set_type, _map_type> &other)
-      const noexcept -> bool {
+  auto operator==(const self_type &other) const noexcept -> bool {
     return read() == other.read();
   }
 

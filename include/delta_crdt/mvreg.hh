@@ -19,16 +19,17 @@ template <std::equality_comparable V,
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct mvreg {
+  using self_type = mvreg<V, _entries_map_type, _set_type, _map_type>;
+
   mvreg(std::uint64_t replicaID) : _replicaID(replicaID) {}
 
-  auto set(V value) noexcept
-      -> /* delta */ mvreg<V, _entries_map_type, _set_type, _map_type> {
+  auto set(V value) noexcept -> /* delta */ self_type {
     auto delta = _values.clear();
     delta = crdt::merge(delta, _values.insert(_replicaID, value));
     return mvreg(_replicaID, delta);
   }
 
-  void merge(mvreg<V, _entries_map_type, _set_type, _map_type> delta) noexcept {
+  void merge(const self_type &delta) noexcept {
     _values = crdt::merge(_values, delta._values);
   }
 

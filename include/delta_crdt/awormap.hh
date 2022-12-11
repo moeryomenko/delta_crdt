@@ -21,30 +21,27 @@ template <std::equality_comparable K, typename V,
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct awor_map {
+  using self_type =
+      awor_map<K, V, _kv_map_type, _entries_map_type, _set_type, _map_type>;
+
   explicit awor_map(std::uint64_t replicaID)
       : _replicaID(replicaID), _keys(replicaID) {}
 
   auto operator[](K key) noexcept -> V { return _entries[key]; }
 
-  auto insert(K key, V value)
-      -> /* delta */ awor_map<K, V, _kv_map_type, _entries_map_type, _set_type,
-                              _map_type> {
+  auto insert(K key, V value) -> /* delta */ self_type {
     auto keys_delta = _keys.insert(key);
     _entries[key] = value;
     return awor_map(_replicaID, keys_delta, key, value);
   }
 
-  auto erase(K key) noexcept
-      -> /* delta */ awor_map<K, V, _kv_map_type, _entries_map_type, _set_type,
-                              _map_type> {
+  auto erase(K key) noexcept -> /* delta */ self_type {
     auto keys_delta = _keys.erase(key);
     _entries.erase(key);
     return awor_map(_replicaID, keys_delta);
   }
 
-  void
-  merge(awor_map<K, V, _kv_map_type, _entries_map_type, _set_type, _map_type>
-            delta) noexcept {
+  void merge(self_type delta) noexcept {
     _keys.merge(delta._keys);
     for (auto [d, value] : delta._entries) {
       if (_keys.contains(d))

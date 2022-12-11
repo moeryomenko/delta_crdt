@@ -32,15 +32,17 @@ template <set_type<dot> _set_type = std::set<dot>,
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct dot_context {
+  using self_type = dot_context<_set_type, _map_type>;
+
   vector_clock<_map_type> clock;
   _set_type dot_cloud;
 
-  auto insert(dot d) noexcept -> dot_context<_set_type, _map_type> {
+  auto insert(dot d) noexcept -> self_type & {
     dot_cloud.insert(d);
     return *this;
   }
 
-  auto compact() noexcept -> dot_context<_set_type, _map_type> {
+  auto compact() noexcept -> self_type & {
     _map_type clock;
     std::erase_if(this->dot_cloud, [&clock, this](const auto &d) {
       auto counter =
@@ -59,8 +61,7 @@ struct dot_context {
     return *this;
   }
 
-  auto merge(dot_context<_set_type, _map_type> a) noexcept
-      -> dot_context<_set_type, _map_type> {
+  auto merge(dot_context<_set_type, _map_type> a) noexcept -> self_type & {
     for (const auto [r, c] : a.clock.vector) {
       upsert(this->clock.vector, r, c, helpers::max(c));
     }
@@ -90,26 +91,27 @@ template <std::equality_comparable T,
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct dot_kernel {
+  using self_type = dot_kernel<T, _entries_map_type, _set_type, _map_type>;
+
   dot_context<_set_type, _map_type> context;
   _entries_map_type entries;
 
   auto insert(std::uint64_t replicaID, T value) noexcept
-      -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
-    dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
+      -> /* delta */ self_type {
+    self_type delta;
     auto d = this->context.next_dot(replicaID);
     this->entries[d] = value;
 
     delta.entries[d] = value;
-    delta.context = dot_context<_set_type, _map_type>{}.insert(d).compact();
+    delta.context.insert(d).compact();
     return delta;
   }
 
-  auto erase(T value) noexcept
-      -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
-    dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
+  auto erase(T value) noexcept -> /* delta */ self_type {
+    self_type delta;
     std::erase_if(entries, [&value, &delta](const auto &it) {
       if (it.second == value) {
-        delta.context = dot_context<>{}.insert(it.first);
+        delta.context.insert(it.first);
         return true;
       }
       return false;
@@ -117,18 +119,16 @@ struct dot_kernel {
     return delta;
   }
 
-  auto erase(const dot &d) noexcept
-      -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
+  auto erase(const dot &d) noexcept -> /* delta */ self_type {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
     if (this->entries.erase(d)) {
-      delta.context = dot_context<>{}.insert(d);
+      delta.context.insert(d);
     }
     return delta;
   }
 
-  auto clear() noexcept
-      -> /* delta */ dot_kernel<T, _entries_map_type, _set_type, _map_type> {
-    dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
+  auto clear() noexcept -> /* delta */ self_type {
+    self_type delta;
     for (auto [d, _] : entries) {
       delta.context.insert(d);
     }
@@ -154,8 +154,8 @@ auto merge(dot_kernel<T, _entries_map_type, _set_type, _map_type> a,
   std::erase_if(a.entries, [&b](const auto &it) {
     return b.context.contains(it.first) && !b.entries.contains(it.first);
   });
-  return dot_kernel<T, _entries_map_type, _set_type, _map_type>{
-      .context = a.context.merge(b.context), .entries = a.entries};
+  return decltype(a){.context = a.context.merge(b.context),
+                     .entries = a.entries};
 }
 
 } // namespace crdt.

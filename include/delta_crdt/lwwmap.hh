@@ -22,29 +22,25 @@ template <std::equality_comparable K, typename V,
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
 struct lwwmap {
+  using self_type =
+      lwwmap<K, V, _kv_map_type, _entries_map_type, _set_type, _map_type>;
+
   explicit lwwmap(std::uint64_t replicaID)
       : _replicaID(replicaID), _map(replicaID) {}
 
   auto operator[](K key) noexcept -> V { return _map[key].read(); }
 
-  auto insert(K key, V value)
-      -> /* delta */ lwwmap<K, V, _kv_map_type, _entries_map_type, _set_type,
-                            _map_type> {
+  auto insert(K key, V value) -> /* delta */ self_type {
     auto delta = _map.insert(key, lwwreg<V>(_replicaID, value));
     return lwwmap(_replicaID, delta);
   }
 
-  auto erase(K key) noexcept
-      -> /* delta */ lwwmap<K, V, _kv_map_type, _entries_map_type, _set_type,
-                            _map_type> {
+  auto erase(K key) noexcept -> /* delta */ self_type {
     auto delta = _map.erase(key);
     return lwwmap(_replicaID, delta);
   }
 
-  void merge(lwwmap<K, V, _kv_map_type, _entries_map_type, _set_type, _map_type>
-                 delta) noexcept {
-    _map.merge(delta._map);
-  }
+  void merge(const self_type &delta) noexcept { _map.merge(delta._map); }
 
   auto contains(K key) const noexcept -> bool { return _map.contains(key); }
 
