@@ -22,7 +22,7 @@ struct ewflag {
   auto enable() noexcept -> /* delta */ self_type {
     auto remove_delta = _kernel.erase(true);
     return ewflag(_replicaID,
-                  crdt::merge(remove_delta, _kernel.insert(_replicaID, true)));
+                  remove_delta.merge(_kernel.insert(_replicaID, true)));
   }
 
   auto disable() noexcept -> /* delta */ self_type {
@@ -33,9 +33,7 @@ struct ewflag {
 
   auto is_disaled() const noexcept -> bool { return read() == false; }
 
-  void merge(const self_type &delta) noexcept {
-    _kernel = crdt::merge(_kernel, delta._kernel);
-  }
+  void merge(const self_type &delta) noexcept { _kernel.merge(delta._kernel); }
 
   auto operator==(const self_type &other) const noexcept -> bool {
     return read() == other.read();

@@ -25,13 +25,11 @@ struct mvreg {
 
   auto set(V value) noexcept -> /* delta */ self_type {
     auto delta = _values.clear();
-    delta = crdt::merge(delta, _values.insert(_replicaID, value));
+    delta.merge(_values.insert(_replicaID, value));
     return mvreg(_replicaID, delta);
   }
 
-  void merge(const self_type &delta) noexcept {
-    _values = crdt::merge(_values, delta._values);
-  }
+  void merge(const self_type &delta) noexcept { _values.merge(delta._values); }
 
   auto read() const noexcept -> std::set<V> {
     std::set<V> result;

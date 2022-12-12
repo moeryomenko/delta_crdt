@@ -27,14 +27,14 @@ struct awor_set {
   auto insert(V value) noexcept -> self_type {
     auto remove_delta = _values.erase(value);
     auto add_delta = _values.insert(_replicaID, value);
-    return awor_set(_replicaID, crdt::merge(remove_delta, add_delta));
+    return awor_set(_replicaID, remove_delta.merge(add_delta));
   }
 
   auto erase(V value) noexcept {
     return awor_set(_replicaID, _values.erase(value));
   }
 
-  void merge(self_type delta) { _values = crdt::merge(_values, delta._values); }
+  void merge(self_type delta) { _values.merge(delta._values); }
 
   auto contains(V value) const noexcept -> bool {
     return std::find_if(_values.entries.begin(), _values.entries.end(),

@@ -26,16 +26,14 @@ struct dwflag {
   auto disable() noexcept -> /* delta */ self_type {
     auto remove_delta = _kernel.erase(false);
     return dwflag(_replicaID,
-                  crdt::merge(remove_delta, _kernel.insert(_replicaID, false)));
+                  remove_delta.merge(_kernel.insert(_replicaID, false)));
   }
 
   auto is_enaled() const noexcept -> bool { return read() == true; }
 
   auto is_disaled() const noexcept -> bool { return read() == false; }
 
-  void merge(const self_type &delta) noexcept {
-    _kernel = crdt::merge(_kernel, delta._kernel);
-  }
+  void merge(const self_type &delta) noexcept { _kernel.merge(delta._kernel); }
 
   auto operator==(const self_type &other) const noexcept -> bool {
     return read() == other.read();

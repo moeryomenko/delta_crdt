@@ -36,11 +36,9 @@ struct causal_counter {
                            });
     if (it != _value.entries.end()) {
       base = std::max(base, it->second);
-      delta_counter._value =
-          crdt::merge(delta_counter._value, _value.erase(it->first));
+      delta_counter._value.merge(_value.erase(it->first));
     }
-    delta_counter._value = crdt::merge(delta_counter._value,
-                                       _value.insert(_replicaID, base + value));
+    delta_counter._value.merge(_value.insert(_replicaID, base + value));
     return delta_counter;
   }
 
@@ -60,9 +58,7 @@ struct causal_counter {
     return delta;
   }
 
-  void merge(const self_type &delta) noexcept {
-    _value = crdt::merge(_value, delta._value);
-  }
+  void merge(const self_type &delta) noexcept { _value.merge(delta._value); }
 
   auto read() const noexcept -> std::uint64_t {
     return std::accumulate(

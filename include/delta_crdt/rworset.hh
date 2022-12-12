@@ -33,9 +33,7 @@ struct rwor_set {
     return update_entry(value, false);
   }
 
-  void merge(const self_type &delta) {
-    _values = crdt::merge(_values, delta._values);
-  }
+  void merge(const self_type &delta) { _values.merge(delta._values); }
 
   auto contains(V value) const noexcept -> bool {
     auto entries = values();
@@ -78,10 +76,9 @@ private:
     self_type delta(_replicaID);
     auto observed_add_remove_delta = _values.erase(std::pair{value, true});
     auto observed_rm_remove_delta = _values.erase(std::pair{value, false});
-    delta._values =
-        crdt::merge(observed_add_remove_delta, observed_rm_remove_delta);
-    delta._values =
-        crdt::merge(delta._values, _values.insert(_replicaID, {value, enable}));
+    delta._values.merge(observed_add_remove_delta)
+        .merge(observed_rm_remove_delta)
+        .merge(_values.insert(_replicaID, {value, enable}));
     return delta;
   }
 

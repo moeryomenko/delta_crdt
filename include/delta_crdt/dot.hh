@@ -135,28 +135,22 @@ struct dot_kernel {
     entries.erase(entries.begin(), entries.end());
     return delta;
   }
-};
 
-template <std::equality_comparable T,
-          iterable_assiative_type<dot, T> _entries_map_type =
-              std::unordered_map<dot, T>,
-          set_type<dot> _set_type = std::set<dot>,
-          iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
-              std::unordered_map<std::uint64_t, std::uint64_t>>
-auto merge(dot_kernel<T, _entries_map_type, _set_type, _map_type> a,
-           dot_kernel<T, _entries_map_type, _set_type, _map_type> b)
-    -> dot_kernel<T, _entries_map_type, _set_type, _map_type> {
-  std::copy_if(b.entries.begin(), b.entries.end(),
-               std::inserter(a.entries, a.entries.end()), [&a](const auto &e) {
-                 return !(a.entries.contains(e.first) ||
-                          a.context.contains(e.first));
-               });
-  std::erase_if(a.entries, [&b](const auto &it) {
-    return b.context.contains(it.first) && !b.entries.contains(it.first);
-  });
-  return decltype(a){.context = a.context.merge(b.context),
-                     .entries = a.entries};
-}
+  auto merge(const self_type &other) noexcept -> self_type & {
+    std::copy_if(other.entries.begin(), other.entries.end(),
+                 std::inserter(this->entries, this->entries.end()),
+                 [this](const auto &e) {
+                   return !(this->entries.contains(e.first) ||
+                            this->context.contains(e.first));
+                 });
+    std::erase_if(this->entries, [&other](const auto &it) {
+      return other.context.contains(it.first) &&
+             !other.entries.contains(it.first);
+    });
+    this->context.merge(other.context);
+    return *this;
+  }
+};
 
 } // namespace crdt.
 
