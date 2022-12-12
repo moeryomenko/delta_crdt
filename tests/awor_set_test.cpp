@@ -17,14 +17,15 @@ auto main() -> int {
     auto delta = replica1.insert(10UL);
     delta.merge(replica1.insert(11UL));
     delta.merge(replica1.insert(12UL));
-    delta.merge(replica1.erase(12UL));
+
+    replica1.merge(replica2.erase(12UL));
     replica2.merge(delta);
 
     replica3.merge(replica1);
 
-    expect(replica1.values() == std::set<std::uint64_t>{10UL, 11UL});
-    expect(replica2.values() == std::set<std::uint64_t>{10UL, 11UL});
-    expect(replica3.values() == std::set<std::uint64_t>{10UL, 11UL});
+    expect(replica1.values() == std::set<std::uint64_t>{10UL, 11UL, 12UL});
+    expect(replica2.values() == std::set<std::uint64_t>{10UL, 11UL, 12UL});
+    expect(replica3.values() == std::set<std::uint64_t>{10UL, 11UL, 12UL});
   };
 
   "associative"_test = [] {

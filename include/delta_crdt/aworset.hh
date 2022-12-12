@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <compare>
 #include <iterator>
+#include <numeric>
 #include <set>
 #include <unordered_map>
 
@@ -33,9 +34,7 @@ struct awor_set {
     return awor_set(_replicaID, _values.erase(value));
   }
 
-  void merge(self_type delta) {
-    _values = crdt::merge(_values, delta._values);
-  }
+  void merge(self_type delta) { _values = crdt::merge(_values, delta._values); }
 
   auto contains(V value) const noexcept -> bool {
     return std::find_if(_values.entries.begin(), _values.entries.end(),
@@ -44,17 +43,16 @@ struct awor_set {
                         }) != _values.entries.end();
   }
 
-  auto operator==(const awor_set<V, _entries_map_type, _set_type, _map_type>
-                      &other) const noexcept -> bool {
+  auto operator==(const self_type &other) const noexcept -> bool {
     return _values.entries == other._values.entries;
   }
 
   auto values() const noexcept -> std::set<V> {
-    std::set<V> values;
-    std::transform(_values.entries.begin(), _values.entries.end(),
-                   std::inserter(values, values.begin()),
-                   [](const auto &it) { return it.second; });
-    return values;
+    return std::accumulate(_values.entries.begin(), _values.entries.end(),
+                           std::set<V>{}, [](std::set<V> values, auto &iter) {
+                             values.insert(iter.second);
+                             return values;
+                           });
   }
 
 private:

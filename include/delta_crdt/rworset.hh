@@ -5,6 +5,7 @@
 #include <iterator>
 #include <numeric>
 #include <set>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 
@@ -28,7 +29,7 @@ struct rwor_set {
     return update_entry(value, true);
   }
 
-  auto remove(V value) noexcept -> /* delta */ self_type {
+  auto erase(V value) noexcept -> /* delta */ self_type {
     return update_entry(value, false);
   }
 
@@ -49,29 +50,22 @@ struct rwor_set {
 
   auto values() const noexcept -> std::set<V> {
     std::unordered_map<V, bool> filter_removed;
-    return std::accumulate(
-        _values.entries.begin(), _values.entries.end(), std::set<V>{},
-        [&filter_removed](std::set<V> values, auto &iter) {
-          if (auto it = filter_removed.find(iter.second.first);
-              it != filter_removed.end()) {
-            it->second &= iter.second.second;
-            if (values.find(iter.second.first) != values.end()) {
-              if (it->second == false) {
-                values.erase(iter.second.first);
-              }
-            } else if (it->second == true) {
-              values.insert(iter.second.first);
-            }
-          } else {
-            filter_removed[iter.second.first] = iter.second.second;
-            if (iter.second.second == true) {
-              values.insert(iter.second.first);
-            } else {
-              values.erase(iter.second.first);
-            }
-          }
-          return values;
-        });
+    for (const auto &[ignore, value] : _values.entries) {
+      auto [key, is_enaled] = value;
+      if (auto it = filter_removed.find(key); it != filter_removed.end()) {
+        it->second &= is_enaled;
+      } else {
+        filter_removed[key] = is_enaled;
+      }
+    }
+    return std::accumulate(filter_removed.begin(), filter_removed.end(),
+                           std::set<V>{}, [](std::set<V> values, auto &iter) {
+                             auto [key, is_enaled] = iter;
+                             if (is_enaled) {
+                               values.insert(key);
+                             }
+                             return values;
+                           });
   }
 
 private:
@@ -81,7 +75,7 @@ private:
 
   auto update_entry(V value, bool enable) noexcept
       -> /* delta */ rwor_set<V, _entries_map_type, _set_type, _map_type> {
-    rwor_set<V, _entries_map_type, _set_type, _map_type> delta(_replicaID);
+    self_type delta(_replicaID);
     auto observed_add_remove_delta = _values.erase(std::pair{value, true});
     auto observed_rm_remove_delta = _values.erase(std::pair{value, false});
     delta._values =

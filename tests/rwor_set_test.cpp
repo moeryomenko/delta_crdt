@@ -18,7 +18,7 @@ auto main() -> int {
     delta.merge(replica1.insert(11UL));
     delta.merge(replica1.insert(12UL));
 
-    replica1.merge(replica2.remove(12UL));
+    replica1.merge(replica2.erase(12UL));
     replica2.merge(delta);
 
     replica3.merge(replica1);
