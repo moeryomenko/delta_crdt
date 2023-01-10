@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <compare>
+#include <optional>
 #include <set>
 #include <unordered_map>
 
@@ -28,7 +29,11 @@ struct lwwmap {
   explicit lwwmap(std::uint64_t replicaID)
       : _replicaID(replicaID), _map(replicaID) {}
 
-  auto operator[](K key) noexcept -> V { return _map[key].read(); }
+  auto operator[](K key) noexcept -> std::optional<V> {
+    auto val = _map[key];
+    return val.has_value() ? std::make_optional(val.value().read())
+                           : std::nullopt;
+  }
 
   auto insert(K key, V value) -> /* delta */ self_type {
     auto delta = _map.insert(key, lwwreg<V>(_replicaID, value));

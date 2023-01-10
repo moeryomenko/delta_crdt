@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <compare>
 #include <iterator>
+#include <optional>
 #include <set>
 #include <unordered_map>
 #include <utility>
@@ -28,7 +29,12 @@ struct rwor_map {
   explicit rwor_map(std::uint64_t replicaID)
       : _replicaID(replicaID), _keys(replicaID) {}
 
-  auto operator[](K key) noexcept -> V { return _entries[key]; }
+  auto operator[](K key) noexcept -> std::optional<V> {
+    auto it = _entries.find(key);
+    return _keys.contains(key) && it != _entries.end()
+               ? std::make_optional(it->second)
+               : std::nullopt;
+  }
 
   auto insert(K key, V value) -> /* delta */ self_type {
     auto keys_delta = _keys.insert(key);
