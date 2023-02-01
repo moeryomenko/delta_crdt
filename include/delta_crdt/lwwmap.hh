@@ -11,6 +11,7 @@
 #include <delta_crdt/crdt_traits.hh>
 #include <delta_crdt/dot.hh>
 #include <delta_crdt/lwwreg.hh>
+#include <utility>
 
 namespace crdt {
 
@@ -38,6 +39,14 @@ struct lwwmap {
   auto insert(K key, V value) -> /* delta */ self_type {
     auto delta = _map.insert(key, lwwreg<V>(_replicaID, value));
     return lwwmap(_replicaID, delta);
+  }
+
+  auto insert(const std::pair<K, V> &pair) -> /* delta */ self_type {
+    return this->insert(pair.first, pair.second);
+  }
+
+  auto insert(std::pair<K, V> &&pair) -> /* delta */ self_type {
+    return this->insert(pair.first, pair.second);
   }
 
   auto erase(K key) noexcept -> /* delta */ self_type {

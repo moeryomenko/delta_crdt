@@ -42,6 +42,14 @@ struct rwor_map {
     return rwor_map(_replicaID, keys_delta, key, value);
   }
 
+  auto insert(const std::pair<K, V> &pair) -> /* delta */ self_type {
+    return this->insert(pair.first, pair.second);
+  }
+
+  auto insert(std::pair<K, V> &&pair) -> /* delta */ self_type {
+    return this->insert(pair.first, pair.second);
+  }
+
   auto erase(K key) noexcept -> /* delta */ self_type {
     auto keys_delta = _keys.erase(key);
     _entries.erase(key);

@@ -12,6 +12,7 @@
 #include <delta_crdt/aworset.hh>
 #include <delta_crdt/crdt_traits.hh>
 #include <delta_crdt/dot.hh>
+#include <utility>
 
 namespace crdt {
 
@@ -40,6 +41,14 @@ struct awor_map {
     auto keys_delta = _keys.insert(key);
     _entries[key] = value;
     return awor_map(_replicaID, keys_delta, key, value);
+  }
+
+  auto insert(const std::pair<K, V> &pair) -> /* delta */ self_type {
+    return this->insert(pair.first, pair.second);
+  }
+
+  auto insert(std::pair<K, V> &&pair) -> /* delta */ self_type {
+    return this->insert(pair.first, pair.second);
   }
 
   auto erase(K key) noexcept -> /* delta */ self_type {
