@@ -38,7 +38,7 @@ struct rwor_map {
 
   auto insert(K key, V value) -> /* delta */ self_type {
     auto keys_delta = _keys.insert(key);
-    _entries[key] = value;
+    this->insert_entry(key, value);
     return rwor_map(_replicaID, keys_delta, key, value);
   }
 
@@ -59,8 +59,9 @@ struct rwor_map {
   void merge(const self_type &delta) noexcept {
     _keys.merge(delta._keys);
     for (auto [d, value] : delta._entries) {
-      if (_keys.contains(d))
-        _entries[d] = value;
+      if (_keys.contains(d)) {
+        this->insert_entry(d, value);
+      }
     }
     std::erase_if(_entries, [this](const auto &it) {
       return !this->_keys.contains(it.first);
@@ -89,6 +90,24 @@ private:
            V value)
       : _replicaID(replicaID), _keys(delta) {
     _entries[key] = value;
+  }
+
+  void insert_entry(K key, V value) {
+    if constexpr (crdt::cvrdt<V>) {
+      this->upsert_crdt_entry(key, value);
+    } else {
+      _entries[key] = value;
+    }
+  }
+
+  void upsert_crdt_entry(K key, V value)
+    requires crdt::cvrdt<V>
+  {
+    if (auto it = _entries.find(key); it != _entries.end()) {
+      it->second.merge(value);
+    } else {
+      _entries[key] = value;
+    }
   }
 };
 

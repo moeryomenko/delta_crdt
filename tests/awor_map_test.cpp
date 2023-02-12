@@ -4,6 +4,7 @@
 #include <string>
 
 #include <delta_crdt/awormap.hh>
+#include <delta_crdt/lwwreg.hh>
 
 auto main() -> int {
   using namespace boost::ut;
@@ -89,5 +90,26 @@ auto main() -> int {
     expect(replica1.contains(11UL));
     expect(replica1_snapshot.contains(11UL));
     expect(replica1 == replica1_snapshot);
+  };
+
+  "crdt types composition"_test = [] {
+    crdt::awor_map<int, crdt::lwwreg<std::string>> replica1(1UL);
+    crdt::awor_map<int, crdt::lwwreg<std::string>> replica2(2UL);
+
+    auto delta1 = replica1.insert({10, crdt::lwwreg<std::string>(1, "test")});
+    auto delta2 = replica2.insert({10, crdt::lwwreg<std::string>(2, "test1")});
+    replica2.merge(delta1);
+    replica1.merge(delta2);
+
+    expect(replica1[10].value().read() == std::string{"test1"});
+    expect(replica1[10] == replica2[10]);
+
+    delta2 = replica2.erase(10);
+    replica1.merge(delta2);
+    delta1 = replica1.insert({10, crdt::lwwreg<std::string>(1, "new value")});
+    replica2.merge(delta1);
+
+    expect(replica2[10].value().read() == std::string{"new value"});
+    expect(replica1[10] == replica2[10]);
   };
 }
