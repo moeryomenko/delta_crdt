@@ -41,6 +41,10 @@ template <typename V> struct lwwreg {
 
   auto read() const noexcept -> V { return _value; }
 
+  auto operator==(const self_type &other) const noexcept -> bool {
+    return this->read() == other.read();
+  }
+
 private:
   using timestamp_type =
       std::chrono::time_point<std::chrono::high_resolution_clock>;

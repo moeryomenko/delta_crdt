@@ -29,6 +29,10 @@ auto main() -> int {
     expect(replica1.is_disaled());
     expect(replica2.is_disaled());
     expect(replica3.is_disaled());
+
+    expect(replica1 == replica2);
+    expect(replica2 == replica3);
+    expect(replica1 == replica3);
   };
 
   "associative"_test = [] {

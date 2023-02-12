@@ -24,6 +24,9 @@ auto main() -> int {
     expect(replica1.read() == replica2.read());
     expect(replica1.read() == replica3.read());
     expect(replica1.read() == 11UL);
+    expect(replica1 == replica2);
+    expect(replica2 == replica3);
+    expect(replica1 == replica3);
   };
 
   "associative"_test = [] {
@@ -47,7 +50,7 @@ auto main() -> int {
     replica2.merge(replica3);
     replica1_snapshot.merge(replica2);
 
-    expect(replica1.read() == replica1_snapshot.read());
+    expect(replica1 == replica1_snapshot);
   };
 
   "commutative"_test = [] {
@@ -65,7 +68,7 @@ auto main() -> int {
 
     replica2.merge(replica1_snapshot);
 
-    expect(replica1.read() == replica2.read());
+    expect(replica1 == replica2);
   };
 
   "idempotent"_test = [] {
@@ -79,6 +82,6 @@ auto main() -> int {
 
     replica1.merge(replica1_snapshot);
 
-    expect(replica1.read() == replica1_snapshot.read());
+    expect(replica1 == replica1_snapshot);
   };
 }

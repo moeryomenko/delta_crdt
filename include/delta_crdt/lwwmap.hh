@@ -58,6 +58,10 @@ struct lwwmap {
 
   auto contains(K key) const noexcept -> bool { return _map.contains(key); }
 
+  auto operator==(const self_type &other) const noexcept -> bool {
+    return this->_map == other._map;
+  }
+
 private:
   std::uint64_t _replicaID;
   awor_map<K, lwwreg<V>, _kv_map_type, _entries_map_type, _set_type, _map_type>

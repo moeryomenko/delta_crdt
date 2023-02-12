@@ -34,6 +34,10 @@ struct pn_counter {
     return _inc.read() - _dec.read();
   }
 
+  auto operator==(const self_type &other) const noexcept -> bool {
+    return this->read() == other.read();
+  }
+
 private:
   std::uint64_t _replicaID;
   gcounter<_map_type> _inc;

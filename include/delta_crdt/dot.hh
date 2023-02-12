@@ -137,16 +137,26 @@ struct dot_kernel {
   }
 
   auto merge(const self_type &other) noexcept -> self_type & {
-    std::copy_if(other.entries.begin(), other.entries.end(),
-                 std::inserter(this->entries, this->entries.end()),
-                 [this](const auto &e) {
-                   return !(this->entries.contains(e.first) ||
-                            this->context.contains(e.first));
-                 });
-    std::erase_if(this->entries, [&other](const auto &it) {
-      return other.context.contains(it.first) &&
-             !other.entries.contains(it.first);
-    });
+    if constexpr (cvrdt<T>) {
+      for (auto [key, value] : other.entries) {
+        if (auto it = this->entries.find(key); it != this->entries.end()) {
+          (*it).merge(value);
+        } else {
+          this->entries.insert(key, value);
+        }
+      }
+    } else {
+      std::copy_if(other.entries.begin(), other.entries.end(),
+                   std::inserter(this->entries, this->entries.end()),
+                   [this](const auto &e) {
+                     return !(this->entries.contains(e.first) ||
+                              this->context.contains(e.first));
+                   });
+      std::erase_if(this->entries, [&other](const auto &it) {
+        return other.context.contains(it.first) &&
+               !other.entries.contains(it.first);
+      });
+    }
     this->context.merge(other.context);
     return *this;
   }

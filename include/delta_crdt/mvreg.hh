@@ -39,6 +39,10 @@ struct mvreg {
     return result;
   }
 
+  auto operator==(const self_type &other) const noexcept -> bool {
+    return this->read() == other.read();
+  }
+
 private:
   std::uint64_t _replicaID;
   dot_kernel<V, _entries_map_type, _set_type, _map_type> _values;

@@ -26,6 +26,10 @@ auto main() -> int {
     expect(replica1.values() == std::set<std::uint64_t>{10UL, 11UL});
     expect(replica2.values() == std::set<std::uint64_t>{10UL, 11UL});
     expect(replica3.values() == std::set<std::uint64_t>{10UL, 11UL});
+
+    expect(replica1 == replica2);
+    expect(replica2 == replica3);
+    expect(replica1 == replica3);
   };
 
   "associative"_test = [] {

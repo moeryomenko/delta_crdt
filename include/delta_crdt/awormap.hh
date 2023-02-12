@@ -72,6 +72,10 @@ struct awor_map {
     return _keys.contains(key) && _entries.contains(key);
   }
 
+  auto operator==(const self_type &other) const noexcept -> bool {
+    return this->_keys == other._keys && this->_entries == other._entries;
+  }
+
 private:
   std::uint64_t _replicaID;
   awor_set<K, _entries_map_type, _set_type, _map_type> _keys;

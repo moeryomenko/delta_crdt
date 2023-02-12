@@ -21,6 +21,10 @@ auto main() -> int {
 
     expect(replica2.contains(10UL));
     expect(replica3.contains(10UL));
+
+    expect(replica1 == replica2);
+    expect(replica2 == replica3);
+    expect(replica1 == replica3);
   };
 
   "associative"_test = [] {

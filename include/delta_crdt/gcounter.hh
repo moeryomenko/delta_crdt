@@ -40,6 +40,10 @@ struct gcounter {
         [](std::uint64_t sum, const auto &n) { return sum + n.second; });
   }
 
+  auto operator==(const self_type &other) const noexcept -> bool {
+    return this->read() == other.read();
+  }
+
 private:
   _map_type _values;
   std::uint64_t _replicaID;

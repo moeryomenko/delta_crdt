@@ -66,6 +66,10 @@ struct causal_counter {
         [](std::uint64_t acc, const auto &it) { return acc + it.second; });
   }
 
+  auto operator==(const self_type &other) const noexcept -> bool {
+    return this->read() == other.read();
+  }
+
 private:
   std::uint64_t _replicaID;
   dot_kernel<std::uint64_t, _entries_map_type, _set_type, _map_type> _value;

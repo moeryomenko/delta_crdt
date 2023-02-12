@@ -24,6 +24,9 @@ auto main() -> int {
 
     expect(replica2.contains(10UL));
     expect(replica3.contains(10UL));
+    expect(replica1 == replica2);
+    expect(replica2 == replica3);
+    expect(replica1 == replica3);
   };
 
   "associative"_test = [] {
@@ -49,6 +52,7 @@ auto main() -> int {
     expect(replica1_snapshot.contains(11UL));
     expect(replica1_snapshot.contains(12UL));
     expect(replica1_snapshot.contains(13UL));
+    expect(replica1 == replica1_snapshot);
   };
 
   "commutative"_test = [] {
@@ -68,6 +72,7 @@ auto main() -> int {
     expect(replica2.contains(11UL));
     expect(replica1.contains(12UL));
     expect(replica2.contains(12UL));
+    expect(replica1 == replica2);
   };
 
   "idempotent"_test = [] {
@@ -83,5 +88,6 @@ auto main() -> int {
 
     expect(replica1.contains(11UL));
     expect(replica1_snapshot.contains(11UL));
+    expect(replica1 == replica1_snapshot);
   };
 }
