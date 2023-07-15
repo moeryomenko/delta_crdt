@@ -15,9 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install conan.io
-        shell: bash
-        run: pip install conan
       - name: Install GCC 10
         shell: bash
         run: sudo apt-get install -y gcc-10 g++-10
@@ -25,18 +22,20 @@ jobs:
         uses: jwlawson/actions-setup-cmake@v1.8
         with:
           cmake-version: '3.20.x'
+      - name: Install gtest manually
+        run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
       - name: Configure CMake
         shell: bash
         working-directory: ${{github.workspace}}
-        run: cmake -S$GITHUB_WORKSPACE -Bbuild -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        run: cmake -S$GITHUB_WORKSPACE -Bbuild -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCRDT_BUILD_TESTS=1
         env:
           CC: gcc-10
           CXX: g++-10
       - name: Build
         working-directory: ${{github.workspace}}/build
         shell: bash
-        run: conan install .. -o build_tests=True
+        run: cmake --build . --config $BUILD_TYPE
       - name: Test
         working-directory: ${{github.workspace}}/build
         shell: bash
-        run: conan build ..
+        run: ctest -C $BUILD_TYPE --output-on-failure

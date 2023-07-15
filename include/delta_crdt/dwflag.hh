@@ -29,9 +29,9 @@ struct dwflag {
                   remove_delta.merge(_kernel.insert(_replicaID, false)));
   }
 
-  auto is_enaled() const noexcept -> bool { return read() == true; }
+  auto is_enaled() const noexcept -> bool { return read(); }
 
-  auto is_disaled() const noexcept -> bool { return read() == false; }
+  auto is_disaled() const noexcept -> bool { return !read(); }
 
   void merge(const self_type &delta) noexcept { _kernel.merge(delta._kernel); }
 

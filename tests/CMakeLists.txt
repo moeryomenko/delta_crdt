@@ -1,13 +1,18 @@
+include(GoogleTest)
+
 function(crdt_test)
-  cmake_parse_arguments(CRDT_TEST "" "NAME" "" ${ARGN})
+    cmake_parse_arguments(CRDT_TEST "" "NAME" "" ${ARGN})
 
-  string(TOUPPER ${CRDT_TEST_NAME} SUIT)
-  string(CONCAT SUIT_TEST ${SUIT} "_SUIT")
-  string(CONCAT CRDT_TEST_SRC ${CRDT_TEST_NAME} ".cpp")
+    string(TOUPPER ${CRDT_TEST_NAME} SUIT)
+    string(CONCAT SUIT_TEST ${SUIT} "_SUIT")
+    string(CONCAT CRDT_TEST_SRC ${CRDT_TEST_NAME} ".cpp")
 
-  add_executable(${CRDT_TEST_NAME} "${CRDT_TEST_SRC}")
-  target_link_libraries(${CRDT_TEST_NAME} PRIVATE delta_crdt boost::ut)
-  add_test(NAME ${SUIT_TEST} COMMAND ${CRDT_TEST_NAME})
+    add_executable(${CRDT_TEST_NAME} "${CRDT_TEST_SRC}")
+    target_link_libraries(
+        ${CRDT_TEST_NAME}
+        PRIVATE delta_crdt GTest::gtest_main
+    )
+    gtest_discover_tests(${CRDT_TEST_NAME})
 endfunction()
 
 crdt_test(NAME "grow_counter_test")

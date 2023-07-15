@@ -1,4 +1,4 @@
-# delta_crdt 
+# delta_crdt
 
 This headers only library contains delta-CRDT types.
 
@@ -20,13 +20,11 @@ See [LICENSE-APACHE](LICENSE-APACHE) and/or [LICENSE-MIT](LICENSE-MIT) for detai
 For build you need:
 
 - [CMake](https://cmake.org/download/)
-- [conan](https://docs.conan.io/en/latest/installation.html)
+- [GoogleTest](https://github.com/google/googletest)
 - gcc 10+ or clang 10+
 
 ```sh
-$ mkdri build && cd build
-$ conan intall .. -o build_tests=True
-$ conan build ..
+cmake -Bbuild . -DCRDT_BUILD_TESTS=True
 ```
 
 ## Usage

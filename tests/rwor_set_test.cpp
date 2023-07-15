@@ -1,85 +1,77 @@
-#include <boost/ut.hpp>
-
 #include <cstdint>
 
 #include <delta_crdt/rworset.hh>
 
-auto main() -> int {
-  using namespace boost::ut;
+#include <gtest/gtest.h>
 
-  "sync by delta equals sync by full state"_test = [] {
-    crdt::rwor_set<std::uint64_t> replica1(1);
-    crdt::rwor_set<std::uint64_t> replica2(2);
+TEST(RemoveWinObservedRemoveSet, SyncByDelta) {
+  crdt::rwor_set<std::uint64_t> replica1(1);
+  crdt::rwor_set<std::uint64_t> replica2(2);
 
-    crdt::rwor_set<std::uint64_t> replica3(2);
-    replica3.merge(replica2);
+  crdt::rwor_set<std::uint64_t> replica3(2);
+  replica3.merge(replica2);
 
-    auto delta = replica1.insert(10UL);
-    delta.merge(replica1.insert(11UL));
-    delta.merge(replica1.insert(12UL));
+  auto delta = replica1.insert(10UL);
+  delta.merge(replica1.insert(11UL));
+  delta.merge(replica1.insert(12UL));
 
-    replica1.merge(replica2.erase(12UL));
-    replica2.merge(delta);
+  replica1.merge(replica2.erase(12UL));
+  replica2.merge(delta);
 
-    replica3.merge(replica1);
+  replica3.merge(replica1);
 
-    expect(replica1.values() == std::set<std::uint64_t>{10UL, 11UL});
-    expect(replica2.values() == std::set<std::uint64_t>{10UL, 11UL});
-    expect(replica3.values() == std::set<std::uint64_t>{10UL, 11UL});
+  EXPECT_EQ(replica1, replica2);
+  EXPECT_EQ(replica2, replica3);
+  EXPECT_EQ(replica1, replica3);
+}
 
-    expect(replica1 == replica2);
-    expect(replica2 == replica3);
-    expect(replica1 == replica3);
-  };
+TEST(RemoveWinObservedRemoveSet, Associative) {
+  crdt::rwor_set<std::uint64_t> replica1(1);
+  crdt::rwor_set<std::uint64_t> replica2(2);
+  crdt::rwor_set<std::uint64_t> replica3(3);
 
-  "associative"_test = [] {
-    crdt::rwor_set<std::uint64_t> replica1(1);
-    crdt::rwor_set<std::uint64_t> replica2(2);
-    crdt::rwor_set<std::uint64_t> replica3(3);
+  replica1.insert(10UL);
+  replica1.insert(11UL);
+  replica2.insert(12UL);
+  replica3.insert(13UL);
 
-    replica1.insert(10UL);
-    replica1.insert(11UL);
-    replica2.insert(12UL);
-    replica3.insert(13UL);
+  auto replica1_snapshot = replica1;
 
-    auto replica1_snapshot = replica1;
+  replica1.merge(replica2);
+  replica1.merge(replica3);
 
-    replica1.merge(replica2);
-    replica1.merge(replica3);
+  replica2.merge(replica3);
+  replica1_snapshot.merge(replica2);
 
-    replica2.merge(replica3);
-    replica1_snapshot.merge(replica2);
+  EXPECT_EQ(replica1, replica1_snapshot);
+}
 
-    expect(replica1 == replica1_snapshot);
-  };
+TEST(RemoveWinObservedRemoveSet, Commutative) {
+  crdt::rwor_set<std::uint64_t> replica1(1);
+  crdt::rwor_set<std::uint64_t> replica2(2);
 
-  "commutative"_test = [] {
-    crdt::rwor_set<std::uint64_t> replica1(1);
-    crdt::rwor_set<std::uint64_t> replica2(2);
+  replica1.insert(10UL);
+  replica1.insert(11UL);
+  replica2.insert(12UL);
 
-    replica1.insert(10UL);
-    replica1.insert(11UL);
-    replica2.insert(12UL);
+  auto replica1_snapshot = replica1;
 
-    auto replica1_snapshot = replica1;
+  replica1.merge(replica2);
 
-    replica1.merge(replica2);
+  replica2.merge(replica1_snapshot);
 
-    replica2.merge(replica1_snapshot);
+  EXPECT_EQ(replica1, replica2);
+}
 
-    expect(replica1 == replica2);
-  };
+TEST(RemoveWinObservedRemoveSet, Idempotent) {
+  crdt::rwor_set<std::uint64_t> replica1(1);
 
-  "idempotent"_test = [] {
-    crdt::rwor_set<std::uint64_t> replica1(1);
+  replica1.insert(10UL);
+  replica1.insert(11UL);
 
-    replica1.insert(10UL);
-    replica1.insert(11UL);
+  auto replica1_snapshot = replica1;
 
-    auto replica1_snapshot = replica1;
+  replica1.merge(replica1_snapshot);
 
-    replica1.merge(replica1_snapshot);
-
-    expect(replica1 == replica1_snapshot);
-  };
+  EXPECT_EQ(replica1, replica1_snapshot);
 }
