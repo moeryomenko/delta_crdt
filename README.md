@@ -20,7 +20,6 @@ See [LICENSE-APACHE](LICENSE-APACHE) and/or [LICENSE-MIT](LICENSE-MIT) for detai
 For build you need:
 
 - [CMake](https://cmake.org/download/)
-- [GoogleTest](https://github.com/google/googletest)
 - gcc 10+ or clang 10+
 
 ```sh
