@@ -1,4 +1,4 @@
-# delta_crdt
+# delta_crdt [![CI](https://github.com/moeryomenko/delta_crdt/actions/workflows/cmake.yaml/badge.svg)](https://github.com/moeryomenko/delta_crdt/actions/workflows/cmake.yaml)
 
 This headers only library contains delta-CRDT types.
 
