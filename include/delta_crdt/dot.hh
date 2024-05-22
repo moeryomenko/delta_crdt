@@ -2,13 +2,11 @@
 #define DOT_H
 
 #include <algorithm>
-#include <compare>
 #include <cstdint>
 #include <functional>
 #include <iterator>
 #include <set>
 #include <unordered_map>
-#include <utility>
 
 #include <delta_crdt/crdt_traits.hh>
 #include <delta_crdt/helpers.hh>
@@ -96,8 +94,8 @@ struct dot_kernel {
   dot_context<_set_type, _map_type> context;
   _entries_map_type entries;
 
-  auto insert(std::uint64_t replicaID, T value) noexcept
-      -> /* delta */ self_type {
+  auto insert(std::uint64_t replicaID,
+              T value) noexcept -> /* delta */ self_type {
     self_type delta;
     auto d = this->context.next_dot(replicaID);
     this->entries[d] = value;

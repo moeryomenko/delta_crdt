@@ -2,7 +2,6 @@
 #define MVREG_H
 
 #include <algorithm>
-#include <compare>
 #include <iterator>
 #include <set>
 #include <unordered_map>

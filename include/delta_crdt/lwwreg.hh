@@ -2,7 +2,6 @@
 #define LWWREG_H
 
 #include <chrono>
-#include <iterator>
 
 #include <delta_crdt/crdt_traits.hh>
 #include <delta_crdt/dot.hh>

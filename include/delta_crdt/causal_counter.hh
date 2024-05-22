@@ -2,8 +2,6 @@
 #define CAUSALCOUNTER_H
 
 #include <algorithm>
-#include <compare>
-#include <iterator>
 #include <numeric>
 #include <set>
 #include <unordered_map>

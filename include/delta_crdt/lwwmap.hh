@@ -1,8 +1,6 @@
 #ifndef LWWMAP_H
 #define LWWMAP_H
 
-#include <algorithm>
-#include <compare>
 #include <optional>
 #include <set>
 #include <unordered_map>

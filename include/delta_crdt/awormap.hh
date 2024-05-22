@@ -1,10 +1,6 @@
 #ifndef AWORMAP_H
 #define AWORMAP_H
 
-#include <algorithm>
-#include <compare>
-#include <iterator>
-#include <numeric>
 #include <optional>
 #include <set>
 #include <unordered_map>

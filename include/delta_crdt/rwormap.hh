@@ -1,9 +1,6 @@
 #ifndef RWORMAP_H
 #define RWORMAP_H
 
-#include <algorithm>
-#include <compare>
-#include <iterator>
 #include <optional>
 #include <set>
 #include <unordered_map>
