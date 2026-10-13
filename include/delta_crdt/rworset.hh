@@ -1,6 +1,7 @@
 #ifndef RWORSET_H
 #define RWORSET_H
 
+#include <map>
 #include <numeric>
 #include <set>
 #include <unordered_map>
@@ -11,7 +12,7 @@
 
 namespace crdt {
 
-template <std::equality_comparable V,
+template <std::totally_ordered V,
           iterable_assiative_type<dot, std::pair<V, bool>> _entries_map_type =
               std::unordered_map<dot, std::pair<V, bool>>,
           set_type<dot> _set_type = std::set<dot>,
@@ -22,29 +23,31 @@ struct rwor_set {
 
   explicit rwor_set(std::uint64_t replicaID) : _replicaID(replicaID) {}
 
-  auto insert(V value) noexcept -> /* delta */ self_type {
+  auto insert(V value) -> /* delta */ self_type {
     return update_entry(value, true);
   }
 
-  auto erase(V value) noexcept -> /* delta */ self_type {
+  auto erase(V value) -> /* delta */ self_type {
     return update_entry(value, false);
   }
 
   void merge(const self_type &delta) { _values.merge(delta._values); }
 
-  auto contains(V value) const noexcept -> bool {
+  auto contains(V value) const -> bool {
     auto entries = values();
     if (entries.find(value) != entries.end())
       return true;
     return false;
   }
 
-  auto operator==(const self_type &other) const noexcept -> bool {
-    return _values.entries == other._values.entries;
+  auto operator==(const self_type &other) const -> bool {
+    return _values.entries == other._values.entries &&
+           _values.context.clock.vector == other._values.context.clock.vector &&
+           _values.context.dot_cloud == other._values.context.dot_cloud;
   }
 
-  auto values() const noexcept -> std::set<V> {
-    std::unordered_map<V, bool> filter_removed;
+  auto values() const -> std::set<V> {
+    std::map<V, bool> filter_removed;
     for (const auto &[ignore, value] : _values.entries) {
       auto [key, is_enaled] = value;
       if (auto it = filter_removed.find(key); it != filter_removed.end()) {
@@ -68,7 +71,7 @@ private:
   dot_kernel<std::pair<V, bool>, _entries_map_type, _set_type, _map_type>
       _values;
 
-  auto update_entry(V value, bool enable) noexcept
+  auto update_entry(V value, bool enable)
       -> /* delta */ rwor_set<V, _entries_map_type, _set_type, _map_type> {
     self_type delta(_replicaID);
     auto observed_add_remove_delta = _values.erase(std::pair{value, true});

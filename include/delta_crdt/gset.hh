@@ -20,11 +20,11 @@ struct gset {
     return gset(_replicaID, {element});
   }
 
-  void merge(const self_type &delta) noexcept {
+  void merge(const self_type &delta) {
     _set.insert(delta._set.begin(), delta._set.end());
   }
 
-  auto contains(const T &element) const noexcept -> bool {
+  auto contains(const T &element) const -> bool {
     return _set.contains(element);
   }
 
@@ -32,7 +32,7 @@ struct gset {
 
   auto end() { return _set.end(); }
 
-  auto operator==(gset<T, _set_type> other) const noexcept -> bool {
+  auto operator==(gset<T, _set_type> other) const -> bool {
     return _set == other._set;
   }
 

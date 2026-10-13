@@ -11,7 +11,7 @@
 
 namespace crdt {
 
-template <std::equality_comparable V,
+template <std::totally_ordered V,
           iterable_assiative_type<dot, V> _entries_map_type =
               std::unordered_map<dot, V>,
           set_type<dot> _set_type = std::set<dot>,
@@ -22,30 +22,32 @@ struct awor_set {
 
   explicit awor_set(std::uint64_t replicaID) : _replicaID(replicaID) {}
 
-  auto insert(V value) noexcept -> self_type {
+  auto insert(V value) -> self_type {
     auto remove_delta = _values.erase(value);
     auto add_delta = _values.insert(_replicaID, value);
     return awor_set(_replicaID, remove_delta.merge(add_delta));
   }
 
-  auto erase(V value) noexcept {
+  auto erase(V value) {
     return awor_set(_replicaID, _values.erase(value));
   }
 
   void merge(self_type delta) { _values.merge(delta._values); }
 
-  auto contains(V value) const noexcept -> bool {
+  auto contains(V value) const -> bool {
     return std::find_if(_values.entries.begin(), _values.entries.end(),
                         [&value](const auto &it) {
                           return it.second == value;
                         }) != _values.entries.end();
   }
 
-  auto operator==(const self_type &other) const noexcept -> bool {
-    return _values.entries == other._values.entries;
+  auto operator==(const self_type &other) const -> bool {
+    return _values.entries == other._values.entries &&
+           _values.context.clock.vector == other._values.context.clock.vector &&
+           _values.context.dot_cloud == other._values.context.dot_cloud;
   }
 
-  auto values() const noexcept -> std::set<V> {
+  auto values() const -> std::set<V> {
     return std::accumulate(_values.entries.begin(), _values.entries.end(),
                            std::set<V>{}, [](std::set<V> values, auto &iter) {
                              values.insert(iter.second);
