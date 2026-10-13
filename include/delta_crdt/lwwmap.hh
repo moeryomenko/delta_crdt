@@ -13,7 +13,7 @@
 
 namespace crdt {
 
-template <std::equality_comparable K, typename V,
+template <std::totally_ordered K, typename V,
           iterable_assiative_type<K, lwwreg<V>> _kv_map_type =
               std::unordered_map<K, lwwreg<V>>,
           iterable_assiative_type<dot, K> _entries_map_type =
@@ -28,14 +28,18 @@ struct lwwmap {
   explicit lwwmap(std::uint64_t replicaID)
       : _replicaID(replicaID), _map(replicaID) {}
 
-  auto operator[](K key) noexcept -> std::optional<V> {
+  auto operator[](K key) -> std::optional<V> {
     auto val = _map[key];
     return val.has_value() ? std::make_optional(val.value().read())
                            : std::nullopt;
   }
 
   auto insert(K key, V value) -> /* delta */ self_type {
-    auto delta = _map.insert(key, lwwreg<V>(_replicaID, value));
+    const auto current = _map[key];
+    const auto logical_time =
+        current.has_value() ? current->logical_time() : std::uint64_t{0};
+    auto delta = _map.insert(
+        key, lwwreg<V>::next_write(_replicaID, std::move(value), logical_time));
     return lwwmap(_replicaID, delta);
   }
 
@@ -47,16 +51,16 @@ struct lwwmap {
     return this->insert(pair.first, pair.second);
   }
 
-  auto erase(K key) noexcept -> /* delta */ self_type {
+  auto erase(K key) -> /* delta */ self_type {
     auto delta = _map.erase(key);
     return lwwmap(_replicaID, delta);
   }
 
-  void merge(const self_type &delta) noexcept { _map.merge(delta._map); }
+  void merge(const self_type &delta) { _map.merge(delta._map); }
 
-  auto contains(K key) const noexcept -> bool { return _map.contains(key); }
+  auto contains(K key) const -> bool { return _map.contains(key); }
 
-  auto operator==(const self_type &other) const noexcept -> bool {
+  auto operator==(const self_type &other) const -> bool {
     return this->_map == other._map;
   }
 

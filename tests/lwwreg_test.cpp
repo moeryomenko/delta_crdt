@@ -72,3 +72,22 @@ TEST(LastWriteWinRegister, Idempotent) {
 
   EXPECT_EQ(replica1, replica1_snapshot);
 }
+
+TEST(LastWriteWinRegister, ResolvesEqualLogicalTimesByReplicaID) {
+  crdt::lwwreg<std::uint64_t> first(1);
+  crdt::lwwreg<std::uint64_t> second(2);
+  crdt::lwwreg<std::uint64_t> left(3);
+  crdt::lwwreg<std::uint64_t> right(4);
+
+  const auto first_delta = first.set(10);
+  const auto second_delta = second.set(20);
+
+  left.merge(first_delta);
+  left.merge(second_delta);
+  right.merge(second_delta);
+  right.merge(first_delta);
+
+  EXPECT_EQ(left.read(), 20);
+  EXPECT_EQ(right.read(), 20);
+  EXPECT_EQ(left, right);
+}
