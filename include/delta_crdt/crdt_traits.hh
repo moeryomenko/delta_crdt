@@ -21,7 +21,7 @@ template <typename T, typename _key>
 concept iterable_type =
     std::is_same_v<_key, typename T::key_type> &&
     requires(T t, typename T::iterator it, typename T::iterator endIt,
-             const typename T::key_type &key) {
+             const typename T::key_type& key) {
       typename T::key_type;
       typename T::iterator;
       typename T::const_iterator;
@@ -66,11 +66,13 @@ concept cvrdt = requires(T a, T b) {
   { a.merge(b) };
 };
 
-} // namespace crdt.
+}  // namespace crdt.
 
-template <class... Ts> struct overloaded : Ts... {
+template <class... Ts>
+struct overloaded : Ts... {
   using Ts::operator()...;
 };
-template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
 
-#endif // CRDT_TRAITS_H
+#endif  // CRDT_TRAITS_H

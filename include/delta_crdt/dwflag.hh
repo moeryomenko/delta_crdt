@@ -35,15 +35,15 @@ struct dwflag {
 
   auto is_disabled() const -> bool { return !read(); }
 
-  void merge(const self_type &delta) { _kernel.merge(delta._kernel); }
+  void merge(const self_type& delta) { _kernel.merge(delta._kernel); }
 
-  auto operator==(const self_type &other) const -> bool {
+  auto operator==(const self_type& other) const -> bool {
     return _kernel.entries == other._kernel.entries &&
            _kernel.context.clock.vector == other._kernel.context.clock.vector &&
            _kernel.context.dot_cloud == other._kernel.context.dot_cloud;
   }
 
-private:
+ private:
   std::uint64_t _replicaID;
   dot_kernel<bool, _entries_map_type, _set_type, _map_type> _kernel;
 
@@ -52,6 +52,6 @@ private:
       : _replicaID(replicaID), _kernel(kernel) {}
 };
 
-} // namespace crdt.
+}  // namespace crdt.
 
-#endif // !DWFLAG_H
+#endif  // !DWFLAG_H

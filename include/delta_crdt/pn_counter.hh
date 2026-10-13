@@ -28,7 +28,7 @@ struct pn_counter {
     return pn_counter<_map_type>(_replicaID, gcounter(_replicaID), dec_delta);
   }
 
-  void merge(const self_type &other) {
+  void merge(const self_type& other) {
     _inc.merge(other._inc);
     _dec.merge(other._dec);
   }
@@ -46,11 +46,11 @@ struct pn_counter {
            static_cast<std::int64_t>(decrements);
   }
 
-  auto operator==(const self_type &other) const -> bool {
+  auto operator==(const self_type& other) const -> bool {
     return this->read() == other.read();
   }
 
-private:
+ private:
   std::uint64_t _replicaID;
   gcounter<_map_type> _inc;
   gcounter<_map_type> _dec;
@@ -60,6 +60,6 @@ private:
       : _replicaID(replicaID), _inc(inc), _dec(dec) {}
 };
 
-} // namespace crdt
+}  // namespace crdt
 
-#endif // !PN_COUNTER_H
+#endif  // !PN_COUNTER_H

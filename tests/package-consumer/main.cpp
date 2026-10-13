@@ -44,11 +44,10 @@ int main() {
 
   return grow_only.read() == 1 && grow_set.contains(1) &&
                  positive_negative.read() == 1 && causal.read() == 1 &&
-                 enable_wins.is_enabled() &&
-                 disable_wins.is_disabled() && add_wins_set.contains(1) &&
-                 remove_wins_set.contains(1) && add_wins_map.contains(1) &&
-                 remove_wins_map.contains(1) && last_write_map[1] == 2 &&
-                 last_write_register.read() == 1 &&
+                 enable_wins.is_enabled() && disable_wins.is_disabled() &&
+                 add_wins_set.contains(1) && remove_wins_set.contains(1) &&
+                 add_wins_map.contains(1) && remove_wins_map.contains(1) &&
+                 last_write_map[1] == 2 && last_write_register.read() == 1 &&
                  multi_value_register.read().contains(1) &&
                  grow_only == grow_only && grow_set == grow_set &&
                  positive_negative == positive_negative && causal == causal &&

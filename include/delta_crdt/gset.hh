@@ -20,11 +20,11 @@ struct gset {
     return gset(_replicaID, {element});
   }
 
-  void merge(const self_type &delta) {
+  void merge(const self_type& delta) {
     _set.insert(delta._set.begin(), delta._set.end());
   }
 
-  auto contains(const T &element) const -> bool {
+  auto contains(const T& element) const -> bool {
     return _set.contains(element);
   }
 
@@ -36,7 +36,7 @@ struct gset {
     return _set == other._set;
   }
 
-private:
+ private:
   std::uint64_t _replicaID;
   _set_type _set;
 
@@ -44,6 +44,6 @@ private:
       : _replicaID(replicaID), _set(set) {}
 };
 
-} // namespace crdt
+}  // namespace crdt
 
-#endif // !GSET_H
+#endif  // !GSET_H

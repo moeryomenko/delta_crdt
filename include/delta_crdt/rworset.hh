@@ -31,16 +31,15 @@ struct rwor_set {
     return update_entry(value, false);
   }
 
-  void merge(const self_type &delta) { _values.merge(delta._values); }
+  void merge(const self_type& delta) { _values.merge(delta._values); }
 
   auto contains(V value) const -> bool {
     auto entries = values();
-    if (entries.find(value) != entries.end())
-      return true;
+    if (entries.find(value) != entries.end()) return true;
     return false;
   }
 
-  auto operator==(const self_type &other) const -> bool {
+  auto operator==(const self_type& other) const -> bool {
     return _values.entries == other._values.entries &&
            _values.context.clock.vector == other._values.context.clock.vector &&
            _values.context.dot_cloud == other._values.context.dot_cloud;
@@ -48,7 +47,7 @@ struct rwor_set {
 
   auto values() const -> std::set<V> {
     std::map<V, bool> filter_removed;
-    for (const auto &[ignore, value] : _values.entries) {
+    for (const auto& [ignore, value] : _values.entries) {
       auto [key, is_enaled] = value;
       if (auto it = filter_removed.find(key); it != filter_removed.end()) {
         it->second &= is_enaled;
@@ -57,7 +56,7 @@ struct rwor_set {
       }
     }
     return std::accumulate(filter_removed.begin(), filter_removed.end(),
-                           std::set<V>{}, [](std::set<V> values, auto &iter) {
+                           std::set<V>{}, [](std::set<V> values, auto& iter) {
                              auto [key, is_enaled] = iter;
                              if (is_enaled) {
                                values.insert(key);
@@ -66,7 +65,7 @@ struct rwor_set {
                            });
   }
 
-private:
+ private:
   std::uint64_t _replicaID;
   dot_kernel<std::pair<V, bool>, _entries_map_type, _set_type, _map_type>
       _values;
@@ -89,6 +88,6 @@ private:
       : _replicaID(replicaID), _values(delta) {}
 };
 
-} // namespace crdt.
+}  // namespace crdt.
 
-#endif // !RWORSET_H
+#endif  // !RWORSET_H

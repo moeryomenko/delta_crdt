@@ -28,20 +28,18 @@ struct awor_set {
     return awor_set(_replicaID, remove_delta.merge(add_delta));
   }
 
-  auto erase(V value) {
-    return awor_set(_replicaID, _values.erase(value));
-  }
+  auto erase(V value) { return awor_set(_replicaID, _values.erase(value)); }
 
   void merge(self_type delta) { _values.merge(delta._values); }
 
   auto contains(V value) const -> bool {
     return std::find_if(_values.entries.begin(), _values.entries.end(),
-                        [&value](const auto &it) {
+                        [&value](const auto& it) {
                           return it.second == value;
                         }) != _values.entries.end();
   }
 
-  auto operator==(const self_type &other) const -> bool {
+  auto operator==(const self_type& other) const -> bool {
     return _values.entries == other._values.entries &&
            _values.context.clock.vector == other._values.context.clock.vector &&
            _values.context.dot_cloud == other._values.context.dot_cloud;
@@ -49,13 +47,13 @@ struct awor_set {
 
   auto values() const -> std::set<V> {
     return std::accumulate(_values.entries.begin(), _values.entries.end(),
-                           std::set<V>{}, [](std::set<V> values, auto &iter) {
+                           std::set<V>{}, [](std::set<V> values, auto& iter) {
                              values.insert(iter.second);
                              return values;
                            });
   }
 
-private:
+ private:
   std::uint64_t _replicaID;
   dot_kernel<V, _entries_map_type, _set_type, _map_type> _values;
 
@@ -64,6 +62,6 @@ private:
       : _replicaID(replicaID), _values(delta) {}
 };
 
-} // namespace crdt.
+}  // namespace crdt.
 
-#endif // !AWORSET_H
+#endif  // !AWORSET_H
