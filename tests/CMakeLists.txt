@@ -15,6 +15,8 @@ function(crdt_test)
     gtest_discover_tests(${CRDT_TEST_NAME})
 endfunction()
 
+crdt_test(NAME "dot_test")
+
 crdt_test(NAME "grow_counter_test")
 
 crdt_test(NAME "pn_counter_test")

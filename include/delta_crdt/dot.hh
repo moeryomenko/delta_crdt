@@ -17,7 +17,7 @@ struct dot {
   std::uint64_t replicaID;
   std::uint64_t counter;
 
-  auto operator<=>(const dot &) const noexcept = default;
+  auto operator<=>(const dot &) const = default;
 };
 
 template <iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
@@ -35,31 +35,34 @@ struct dot_context {
   vector_clock<_map_type> clock;
   _set_type dot_cloud;
 
-  auto insert(dot d) noexcept -> self_type & {
+  auto insert(dot d) -> self_type & {
     dot_cloud.insert(d);
     return *this;
   }
 
-  auto compact() noexcept -> self_type & {
-    _map_type clock;
-    std::erase_if(this->dot_cloud, [&clock, this](const auto &d) {
-      auto counter =
-          helpers::get_or_default(this->clock.vector, d.replicaID, 0UL);
-      if (d.counter == counter + 1) {
-        clock[d.replicaID] = d.counter;
-        return true;
-      } else if (d.counter <= counter) {
-        return true;
-      } else {
+  auto compact() -> self_type & {
+    bool advanced = true;
+    while (advanced) {
+      advanced = false;
+      std::erase_if(this->dot_cloud, [this, &advanced](const auto &d) {
+        const auto it = this->clock.vector.find(d.replicaID);
+        const auto counter =
+            it == this->clock.vector.end() ? 0UL : it->second;
+        if (d.counter <= counter) {
+          return true;
+        }
+        if (d.counter == counter + 1) {
+          this->clock.vector[d.replicaID] = d.counter;
+          advanced = true;
+          return true;
+        }
         return false;
-      }
-    });
-    this->clock.vector = clock;
-
+      });
+    }
     return *this;
   }
 
-  auto merge(dot_context<_set_type, _map_type> a) noexcept -> self_type & {
+  auto merge(dot_context<_set_type, _map_type> a) -> self_type & {
     for (const auto [r, c] : a.clock.vector) {
       upsert(this->clock.vector, r, c, helpers::max(c));
     }
@@ -68,12 +71,16 @@ struct dot_context {
     return this->compact();
   }
 
-  auto contains(dot d) const noexcept -> bool {
-    return this->clock.vector.contains(d.replicaID) ||
-           this->dot_cloud.contains(d);
+  auto contains(dot d) const -> bool {
+    if (const auto it = this->clock.vector.find(d.replicaID);
+        it != this->clock.vector.end() && d.counter <= it->second) {
+      return true;
+    }
+    return this->dot_cloud.contains(d);
   }
 
   auto next_dot(std::uint64_t replicaID) -> dot {
+    this->compact();
     return dot{
         .replicaID = replicaID,
         .counter = upsert(this->clock.vector, replicaID, 1UL,
@@ -95,7 +102,7 @@ struct dot_kernel {
   _entries_map_type entries;
 
   auto insert(std::uint64_t replicaID,
-              T value) noexcept -> /* delta */ self_type {
+              T value) -> /* delta */ self_type {
     self_type delta;
     auto d = this->context.next_dot(replicaID);
     this->entries[d] = value;
@@ -105,7 +112,7 @@ struct dot_kernel {
     return delta;
   }
 
-  auto erase(T value) noexcept -> /* delta */ self_type {
+  auto erase(T value) -> /* delta */ self_type {
     self_type delta;
     std::erase_if(entries, [&value, &delta](const auto &it) {
       if (it.second == value) {
@@ -117,7 +124,7 @@ struct dot_kernel {
     return delta;
   }
 
-  auto erase(const dot &d) noexcept -> /* delta */ self_type {
+  auto erase(const dot &d) -> /* delta */ self_type {
     dot_kernel<T, _entries_map_type, _set_type, _map_type> delta;
     if (this->entries.erase(d)) {
       delta.context.insert(d);
@@ -125,7 +132,7 @@ struct dot_kernel {
     return delta;
   }
 
-  auto clear() noexcept -> /* delta */ self_type {
+  auto clear() -> /* delta */ self_type {
     self_type delta;
     for (auto [d, _] : entries) {
       delta.context.insert(d);
@@ -134,27 +141,21 @@ struct dot_kernel {
     return delta;
   }
 
-  auto merge(const self_type &other) noexcept -> self_type & {
-    if constexpr (cvrdt<T>) {
-      for (auto [key, value] : other.entries) {
-        if (auto it = this->entries.find(key); it != this->entries.end()) {
-          (*it).merge(value);
-        } else {
-          this->entries.insert(key, value);
+  auto merge(const self_type &other) -> self_type & {
+    for (const auto &[key, value] : other.entries) {
+      if (auto it = this->entries.find(key); it != this->entries.end()) {
+        if constexpr (cvrdt<T>) {
+          it->second.merge(value);
         }
+      } else if (!this->context.contains(key)) {
+        this->entries.insert({key, value});
       }
-    } else {
-      std::copy_if(other.entries.begin(), other.entries.end(),
-                   std::inserter(this->entries, this->entries.end()),
-                   [this](const auto &e) {
-                     return !(this->entries.contains(e.first) ||
-                              this->context.contains(e.first));
-                   });
-      std::erase_if(this->entries, [&other](const auto &it) {
-        return other.context.contains(it.first) &&
-               !other.entries.contains(it.first);
-      });
     }
+
+    std::erase_if(this->entries, [&other](const auto &entry) {
+      return other.context.contains(entry.first) &&
+             !other.entries.contains(entry.first);
+    });
     this->context.merge(other.context);
     return *this;
   }
