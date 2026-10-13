@@ -75,8 +75,8 @@ struct causal_counter {
   std::uint64_t _replicaID;
   dot_kernel<std::int64_t, _entries_map_type, _set_type, _map_type> _value;
 
-  static auto checked_add(std::int64_t left, std::int64_t right)
-      -> std::int64_t {
+  static auto checked_add(std::int64_t left,
+                          std::int64_t right) -> std::int64_t {
     if ((right > 0 &&
          left > std::numeric_limits<std::int64_t>::max() - right) ||
         (right < 0 &&

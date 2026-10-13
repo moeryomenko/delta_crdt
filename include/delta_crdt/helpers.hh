@@ -28,8 +28,8 @@ struct max {
 
 template <typename _key_type, typename _value_type,
           crdt::iterable_assiative_type<_key_type, _value_type> _map_type>
-auto get_or_default(_map_type _map, _key_type _key, _value_type _value)
-    -> _value_type {
+auto get_or_default(_map_type _map, _key_type _key,
+                    _value_type _value) -> _value_type {
   if (auto it = _map.find(_key); it != _map.end()) {
     return it->second;
   } else {
