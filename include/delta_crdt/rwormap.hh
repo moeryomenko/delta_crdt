@@ -1,6 +1,7 @@
 #ifndef RWORMAP_H
 #define RWORMAP_H
 
+#include <concepts>
 #include <optional>
 #include <set>
 #include <unordered_map>
@@ -12,13 +13,14 @@
 
 namespace crdt {
 
-template <std::equality_comparable K, typename V,
+template <std::totally_ordered K, typename V,
           iterable_assiative_type<K, V> _kv_map_type = std::unordered_map<K, V>,
           iterable_assiative_type<dot, std::pair<K, bool>> _entries_map_type =
               std::unordered_map<dot, std::pair<K, bool>>,
           set_type<dot> _set_type = std::set<dot>,
           iterable_assiative_type<std::uint64_t, std::uint64_t> _map_type =
               std::unordered_map<std::uint64_t, std::uint64_t>>
+  requires(crdt::cvrdt<V> || std::totally_ordered<V>)
 struct rwor_map {
   using self_type =
       rwor_map<K, V, _kv_map_type, _entries_map_type, _set_type, _map_type>;
@@ -26,7 +28,7 @@ struct rwor_map {
   explicit rwor_map(std::uint64_t replicaID)
       : _replicaID(replicaID), _keys(replicaID) {}
 
-  auto operator[](K key) noexcept -> std::optional<V> {
+  auto operator[](K key) -> std::optional<V> {
     auto it = _entries.find(key);
     return _keys.contains(key) && it != _entries.end()
                ? std::make_optional(it->second)
@@ -35,8 +37,8 @@ struct rwor_map {
 
   auto insert(K key, V value) -> /* delta */ self_type {
     auto keys_delta = _keys.insert(key);
-    this->insert_entry(key, value);
-    return rwor_map(_replicaID, keys_delta, key, value);
+    this->insert_entry(key, std::move(value));
+    return rwor_map(_replicaID, keys_delta, key, _entries.find(key)->second);
   }
 
   auto insert(const std::pair<K, V> &pair) -> /* delta */ self_type {
@@ -47,13 +49,13 @@ struct rwor_map {
     return this->insert(pair.first, pair.second);
   }
 
-  auto erase(K key) noexcept -> /* delta */ self_type {
+  auto erase(K key) -> /* delta */ self_type {
     auto keys_delta = _keys.erase(key);
     _entries.erase(key);
     return rwor_map(_replicaID, keys_delta);
   }
 
-  void merge(const self_type &delta) noexcept {
+  void merge(const self_type &delta) {
     _keys.merge(delta._keys);
     for (auto [d, value] : delta._entries) {
       if (_keys.contains(d)) {
@@ -65,11 +67,11 @@ struct rwor_map {
     });
   }
 
-  auto contains(K key) const noexcept -> bool {
+  auto contains(K key) const -> bool {
     return _keys.contains(key) && _entries.contains(key);
   }
 
-  auto operator==(const self_type &other) const noexcept -> bool {
+  auto operator==(const self_type &other) const -> bool {
     return this->_keys == other._keys && this->_entries == other._entries;
   }
 
@@ -90,20 +92,14 @@ private:
   }
 
   void insert_entry(K key, V value) {
-    if constexpr (crdt::cvrdt<V>) {
-      this->upsert_crdt_entry(key, value);
-    } else {
-      _entries[key] = value;
-    }
-  }
-
-  void upsert_crdt_entry(K key, V value)
-    requires crdt::cvrdt<V>
-  {
     if (auto it = _entries.find(key); it != _entries.end()) {
-      it->second.merge(value);
+      if constexpr (crdt::cvrdt<V>) {
+        it->second.merge(value);
+      } else if (it->second < value) {
+        it->second = std::move(value);
+      }
     } else {
-      _entries[key] = value;
+      _entries[key] = std::move(value);
     }
   }
 };

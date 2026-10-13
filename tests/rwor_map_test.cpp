@@ -96,3 +96,37 @@ TEST(RemoveWinObservedRemoveMap, Idempotent) {
   EXPECT_TRUE(replica1_snapshot.contains(11UL));
   EXPECT_EQ(replica1, replica1_snapshot);
 }
+
+TEST(RemoveWinObservedRemoveMap, ConcurrentPlainValuesUseMaximumValue) {
+  rwor_map first(1);
+  rwor_map second(2);
+  rwor_map left(3);
+  rwor_map right(4);
+
+  const auto first_delta = first.insert(10, "alpha");
+  const auto second_delta = second.insert(10, "omega");
+
+  left.merge(first_delta);
+  left.merge(second_delta);
+  right.merge(second_delta);
+  right.merge(first_delta);
+
+  EXPECT_EQ(left[10], std::optional<std::string>{"omega"});
+  EXPECT_EQ(right[10], std::optional<std::string>{"omega"});
+  EXPECT_EQ(left, right);
+}
+
+TEST(RemoveWinObservedRemoveMap, SequentialDeltasCarryTheEffectiveValue) {
+  rwor_map sender(1);
+  rwor_map receiver(2);
+
+  const auto first_delta = sender.insert(10, "omega");
+  const auto second_delta = sender.insert(10, "alpha");
+
+  receiver.merge(second_delta);
+  receiver.merge(first_delta);
+
+  EXPECT_EQ(sender[10], std::optional<std::string>{"omega"});
+  EXPECT_EQ(receiver[10], sender[10]);
+  EXPECT_EQ(receiver, sender);
+}

@@ -110,3 +110,37 @@ TEST(AddWinObservedRemoveMap, CRDTTypeComposition) {
   EXPECT_EQ(replica2[10].value().read(), std::string{"new value"});
   EXPECT_EQ(replica1[10], replica2[10]);
 }
+
+TEST(AddWinObservedRemoveMap, ConcurrentPlainValuesUseMaximumValue) {
+  awor_map first(1);
+  awor_map second(2);
+  awor_map left(3);
+  awor_map right(4);
+
+  const auto first_delta = first.insert(10, "alpha");
+  const auto second_delta = second.insert(10, "omega");
+
+  left.merge(first_delta);
+  left.merge(second_delta);
+  right.merge(second_delta);
+  right.merge(first_delta);
+
+  EXPECT_EQ(left[10], std::optional<std::string>{"omega"});
+  EXPECT_EQ(right[10], std::optional<std::string>{"omega"});
+  EXPECT_EQ(left, right);
+}
+
+TEST(AddWinObservedRemoveMap, SequentialDeltasCarryTheEffectiveValue) {
+  awor_map sender(1);
+  awor_map receiver(2);
+
+  const auto first_delta = sender.insert(10, "omega");
+  const auto second_delta = sender.insert(10, "alpha");
+
+  receiver.merge(second_delta);
+  receiver.merge(first_delta);
+
+  EXPECT_EQ(sender[10], std::optional<std::string>{"omega"});
+  EXPECT_EQ(receiver[10], sender[10]);
+  EXPECT_EQ(receiver, sender);
+}
