@@ -27,6 +27,24 @@ find_package(delta_crdt CONFIG REQUIRED)
 target_link_libraries(my_target PRIVATE delta_crdt::delta_crdt)
 ```
 
+## Maintainer quality checks
+
+Configure a test-enabled build before running the quality targets because this header-only library uses test translation units for its clang-tidy compilation database:
+
+```sh
+cmake -S . -B build -DCRDT_BUILD_TESTS=ON
+cmake --build build --target format-check
+cmake --build build --target lint
+```
+
+`format-check` and `lint` do not rewrite source. Run the following only when you intend to rewrite all repository-owned C++ sources:
+
+```sh
+cmake --build build --target format
+```
+
+Only `format` and `format-check` require `clang-format`; only `lint` requires `clang-tidy`.
+
 ## Usage
 
 Each replica needs a unique, durable replica ID. Mutating operations update local state and return a delta that can be transmitted to another replica. Deltas may be duplicated, delayed, replayed, or delivered in a different order.

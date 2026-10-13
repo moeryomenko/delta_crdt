@@ -7,6 +7,19 @@ on:
   pull_request:
 
 jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang tools
+        run: sudo apt-get update && sudo apt-get install --yes clang-format clang-tidy
+      - name: Configure quality checks
+        run: cmake -S . -B quality-build -DCRDT_BUILD_TESTS=ON
+      - name: Check formatting
+        run: cmake --build quality-build --target format-check
+      - name: Run clang-tidy
+        run: cmake --build quality-build --target lint
+
   build:
     runs-on: ubuntu-latest
     strategy:
