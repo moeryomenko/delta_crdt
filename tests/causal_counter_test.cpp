@@ -81,3 +81,27 @@ TEST(CausalCounter, Idempotent) {
 
   EXPECT_EQ(replica1, replica1_snapshot);
 }
+
+TEST(CausalCounter, ReplacementRemovesPreviouslyReplicatedContribution) {
+  crdt::causal_counter sender(1);
+  crdt::causal_counter receiver(2);
+
+  const auto first = sender += 10;
+  receiver.merge(first);
+  const auto replacement = sender += 5;
+  receiver.merge(replacement);
+  receiver.merge(first);
+
+  EXPECT_EQ(sender.read(), 15);
+  EXPECT_EQ(receiver.read(), 15);
+  EXPECT_EQ(sender, receiver);
+}
+
+TEST(CausalCounter, SupportsNegativeValues) {
+  crdt::causal_counter replica(1);
+
+  const auto delta = replica -= 3;
+
+  EXPECT_EQ(replica.read(), -3);
+  EXPECT_EQ(delta.read(), -3);
+}

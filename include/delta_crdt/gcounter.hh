@@ -1,11 +1,6 @@
 #ifndef GROW_COUNTER_H
 #define GROW_COUNTER_H
 
-#include <algorithm>
-#include <cstdint>
-#include <numeric>
-#include <unordered_map>
-
 #include <delta_crdt/crdt_traits.hh>
 #include <delta_crdt/helpers.hh>
 
@@ -20,13 +15,13 @@ struct gcounter {
     _values[replicaID] = 0;
   }
 
-  auto operator++() noexcept -> /* delta */ self_type {
+  auto operator++() -> /* delta */ self_type {
     auto value = upsert(this->_values, _replicaID, 1UL,
                         helpers::increment<std::uint64_t>{});
     return gcounter(_replicaID, value);
   }
 
-  void merge(const self_type &other) noexcept {
+  void merge(const self_type &other) {
     std::for_each(other._values.begin(), other._values.end(),
                   [this](const auto &dot) {
                     upsert(this->_values, dot.first, dot.second,
@@ -34,13 +29,13 @@ struct gcounter {
                   });
   }
 
-  auto read() const noexcept -> std::uint64_t {
+  auto read() const -> std::uint64_t {
     return std::accumulate(
-        _values.begin(), _values.end(), 0,
+        _values.begin(), _values.end(), std::uint64_t{0},
         [](std::uint64_t sum, const auto &n) { return sum + n.second; });
   }
 
-  auto operator==(const self_type &other) const noexcept -> bool {
+  auto operator==(const self_type &other) const -> bool {
     return this->read() == other.read();
   }
 

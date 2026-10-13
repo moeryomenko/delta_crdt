@@ -101,3 +101,11 @@ TEST(PositiveNegativeCounter, Idempotent) {
 
   EXPECT_EQ(replica1, replica1_snapshot);
 }
+
+TEST(PositiveNegativeCounter, RepresentsNegativeValues) {
+  crdt::pn_counter replica(1);
+
+  --replica;
+
+  EXPECT_EQ(replica.read(), -1);
+}
