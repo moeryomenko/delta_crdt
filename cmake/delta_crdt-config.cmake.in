@@ -1,0 +1,4 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/delta_crdtTargets.cmake")
+check_required_components(delta_crdt)

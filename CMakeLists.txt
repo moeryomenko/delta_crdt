@@ -1,63 +1,65 @@
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
-project(delta_crdt CXX)
+project(delta_crdt VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+option(CRDT_BUILD_TESTS "Build delta_crdt tests" OFF)
 
-# need for clangd.
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# setup ccache if available.
-find_program(CCACHE_PROGRAM ccache)
-if(CCACHE_PROGRAM)
-    set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
-    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
-endif()
-
-add_library(delta_crdt INTERFACE)
-target_include_directories(
-    delta_crdt
-    INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-)
-target_include_directories(
-    delta_crdt
-    SYSTEM
-    INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>
-)
-
-# Setup package config
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
-set(CONFIG_PACKAGE_INSTALL_DIR lib/cmake/delta_crdt)
+add_library(delta_crdt INTERFACE)
+add_library(delta_crdt::delta_crdt ALIAS delta_crdt)
+target_compile_features(delta_crdt INTERFACE cxx_std_20)
+target_include_directories(
+    delta_crdt
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 
+configure_package_config_file(
+    cmake/delta_crdt-config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/delta_crdt-config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/delta_crdt
+)
 write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/cmake/delta_crdt-config-version.cmake
-    VERSION 0.0.1
+    ${CMAKE_CURRENT_BINARY_DIR}/delta_crdt-config-version.cmake
+    VERSION ${PROJECT_VERSION}
     COMPATIBILITY SameMajorVersion
 )
 
-# Install target
 install(
-    DIRECTORY include/${PROJECT_NAME}
+    TARGETS delta_crdt
+    EXPORT delta_crdtTargets
+)
+install(
+    DIRECTORY include/delta_crdt
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 install(
-    DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    EXPORT delta_crdtTargets
+    FILE delta_crdtTargets.cmake
+    NAMESPACE delta_crdt::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/delta_crdt
+)
+install(
+    FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/delta_crdt-config.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/delta_crdt-config-version.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/delta_crdt
 )
 
 if(CRDT_BUILD_TESTS)
     enable_testing()
-    include(FetchContent)
-    fetchcontent_declare(
-        googletest
-        URL
-            https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-    )
-    # For Windows: Prevent overriding the parent project's compiler/linker settings
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    fetchcontent_makeavailable(googletest)
+    find_package(GTest CONFIG QUIET)
+    if(NOT TARGET GTest::gtest_main)
+        include(FetchContent)
+        FetchContent_Declare(
+            googletest
+            URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+        )
+        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+        FetchContent_MakeAvailable(googletest)
+    endif()
 
     add_subdirectory(tests)
 endif()
