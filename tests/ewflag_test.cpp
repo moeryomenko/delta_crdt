@@ -4,11 +4,16 @@
 
 #include <gtest/gtest.h>
 
-TEST(EnableWinFlag, SyncByDelta) {
-  crdt::ewflag replica1(1);
-  crdt::ewflag replica2(2);
+namespace {
+constexpr auto kOne = 1;
+constexpr auto kTwo = 2;
+}  // namespace
 
-  crdt::ewflag replica3(2);
+TEST(EnableWinFlag, SyncByDelta) {
+  crdt::ewflag replica1(kOne);
+  crdt::ewflag replica2(kTwo);
+
+  crdt::ewflag replica3(kTwo);
   replica3.merge(replica2);
 
   auto delta = replica1.enable();
@@ -33,9 +38,9 @@ TEST(EnableWinFlag, SyncByDelta) {
 }
 
 TEST(EnableWinFlag, Associative) {
-  crdt::ewflag replica1(1);
-  crdt::ewflag replica2(2);
-  crdt::ewflag replica3(2);
+  crdt::ewflag replica1(kOne);
+  crdt::ewflag replica2(kTwo);
+  crdt::ewflag replica3(kTwo);
 
   replica1.enable();
   replica2.enable();
@@ -53,8 +58,8 @@ TEST(EnableWinFlag, Associative) {
 }
 
 TEST(EnableWinFlag, Commutative) {
-  crdt::ewflag replica1(1);
-  crdt::ewflag replica2(2);
+  crdt::ewflag replica1(kOne);
+  crdt::ewflag replica2(kTwo);
 
   replica1.enable();
   replica2.disable();
@@ -69,7 +74,7 @@ TEST(EnableWinFlag, Commutative) {
 }
 
 TEST(EnableWinFlag, Idempotent) {
-  crdt::ewflag replica1(1);
+  crdt::ewflag replica1(kOne);
 
   replica1.enable();
 

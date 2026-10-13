@@ -4,20 +4,31 @@
 
 #include <gtest/gtest.h>
 
-TEST(LastWriteWinRegister, SyncByDelta) {
-  crdt::lwwreg<std::uint64_t> replica1(1);
-  crdt::lwwreg<std::uint64_t> replica2(2);
+namespace {
+constexpr auto kOne = 1;
+constexpr auto kTwo = 2;
+constexpr auto kThree = 3;
+constexpr auto kFour = 4;
+constexpr auto kTen = 10;
+constexpr auto kTwelve = 12;
+constexpr auto kThirteen = 13;
+constexpr auto kTwenty = 20;
+}  // namespace
 
-  crdt::lwwreg<std::uint64_t> replica3(2);
+TEST(LastWriteWinRegister, SyncByDelta) {
+  crdt::lwwreg<std::uint64_t> replica1(kOne);
+  crdt::lwwreg<std::uint64_t> replica2(kTwo);
+
+  crdt::lwwreg<std::uint64_t> replica3(kTwo);
   replica3.merge(replica2);
 
-  auto delta = replica1.set(10UL);
-  delta.merge(replica1.set(12UL));
+  auto delta = replica1.set(kTen);
+  delta.merge(replica1.set(kTwelve));
   replica2.merge(delta);
 
   replica3.merge(replica1);
 
-  EXPECT_EQ(replica1.read(), 12UL);
+  EXPECT_EQ(replica1.read(), kTwelve);
   EXPECT_EQ(replica1.read(), replica2.read());
   EXPECT_EQ(replica1.read(), replica3.read());
 
@@ -27,13 +38,13 @@ TEST(LastWriteWinRegister, SyncByDelta) {
 }
 
 TEST(LastWriteWinRegister, Associative) {
-  crdt::lwwreg<std::uint64_t> replica1(1);
-  crdt::lwwreg<std::uint64_t> replica2(2);
-  crdt::lwwreg<std::uint64_t> replica3(3);
+  crdt::lwwreg<std::uint64_t> replica1(kOne);
+  crdt::lwwreg<std::uint64_t> replica2(kTwo);
+  crdt::lwwreg<std::uint64_t> replica3(kThree);
 
-  replica1.set(10UL);
-  replica2.set(12UL);
-  replica3.set(13UL);
+  replica1.set(kTen);
+  replica2.set(kTwelve);
+  replica3.set(kThirteen);
 
   auto replica1_snapshot = replica1;
 
@@ -47,12 +58,12 @@ TEST(LastWriteWinRegister, Associative) {
 }
 
 TEST(LastWriteWinRegister, Commutative) {
-  crdt::lwwreg<std::uint64_t> replica1(1);
-  crdt::lwwreg<std::uint64_t> replica2(2);
+  crdt::lwwreg<std::uint64_t> replica1(kOne);
+  crdt::lwwreg<std::uint64_t> replica2(kTwo);
 
-  replica1.set(10UL);
+  replica1.set(kTen);
   auto replica1_snapshot = replica1;
-  replica2.set(12UL);
+  replica2.set(kTwelve);
 
   replica1.merge(replica2);
 
@@ -62,9 +73,9 @@ TEST(LastWriteWinRegister, Commutative) {
 }
 
 TEST(LastWriteWinRegister, Idempotent) {
-  crdt::lwwreg<std::uint64_t> replica1(1);
+  crdt::lwwreg<std::uint64_t> replica1(kOne);
 
-  replica1.set(10UL);
+  replica1.set(kTen);
 
   auto replica1_snapshot = replica1;
 
@@ -74,20 +85,20 @@ TEST(LastWriteWinRegister, Idempotent) {
 }
 
 TEST(LastWriteWinRegister, ResolvesEqualLogicalTimesByReplicaID) {
-  crdt::lwwreg<std::uint64_t> first(1);
-  crdt::lwwreg<std::uint64_t> second(2);
-  crdt::lwwreg<std::uint64_t> left(3);
-  crdt::lwwreg<std::uint64_t> right(4);
+  crdt::lwwreg<std::uint64_t> first(kOne);
+  crdt::lwwreg<std::uint64_t> second(kTwo);
+  crdt::lwwreg<std::uint64_t> left(kThree);
+  crdt::lwwreg<std::uint64_t> right(kFour);
 
-  const auto first_delta = first.set(10);
-  const auto second_delta = second.set(20);
+  const auto first_delta = first.set(kTen);
+  const auto second_delta = second.set(kTwenty);
 
   left.merge(first_delta);
   left.merge(second_delta);
   right.merge(second_delta);
   right.merge(first_delta);
 
-  EXPECT_EQ(left.read(), 20);
-  EXPECT_EQ(right.read(), 20);
+  EXPECT_EQ(left.read(), kTwenty);
+  EXPECT_EQ(right.read(), kTwenty);
   EXPECT_EQ(left, right);
 }

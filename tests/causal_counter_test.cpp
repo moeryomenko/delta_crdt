@@ -5,31 +5,41 @@
 
 #include <gtest/gtest.h>
 
-TEST(CausalCounter, SyncByDelta) {
-  crdt::causal_counter replica1(1);
-  crdt::causal_counter replica2(2);
+namespace {
+constexpr auto kOne = 1;
+constexpr auto kTwo = 2;
+constexpr auto kThree = 3;
+constexpr auto kFive = 5;
+constexpr auto kTen = 10;
+constexpr auto kEleven = 11;
+constexpr auto kFifteen = 15;
+}  // namespace
 
-  crdt::causal_counter replica3(3);
+TEST(CausalCounter, SyncByDelta) {
+  crdt::causal_counter replica1(kOne);
+  crdt::causal_counter replica2(kTwo);
+
+  crdt::causal_counter replica3(kThree);
   replica3.merge(replica2);
 
-  auto delta = (replica1 += 10UL);
-  replica1.merge(replica2 += 1UL);
+  auto delta = (replica1 += kTen);
+  replica1.merge(replica2 += kOne);
   replica2.merge(delta);
 
   replica3.merge(replica1);
 
   EXPECT_EQ(replica1.read(), replica2.read());
   EXPECT_EQ(replica1.read(), replica3.read());
-  EXPECT_EQ(replica1.read(), 11UL);
+  EXPECT_EQ(replica1.read(), kEleven);
   EXPECT_EQ(replica1, replica2);
   EXPECT_EQ(replica2, replica3);
   EXPECT_EQ(replica1, replica3);
 }
 
 TEST(CausalCounter, Associative) {
-  crdt::causal_counter replica1(1);
-  crdt::causal_counter replica2(2);
-  crdt::causal_counter replica3(3);
+  crdt::causal_counter replica1(kOne);
+  crdt::causal_counter replica2(kTwo);
+  crdt::causal_counter replica3(kThree);
 
   ++replica1;
 
@@ -51,8 +61,8 @@ TEST(CausalCounter, Associative) {
 }
 
 TEST(CausalCounter, Commutative) {
-  crdt::causal_counter replica1(1);
-  crdt::causal_counter replica2(2);
+  crdt::causal_counter replica1(kOne);
+  crdt::causal_counter replica2(kTwo);
 
   ++replica1;
 
@@ -69,11 +79,11 @@ TEST(CausalCounter, Commutative) {
 };
 
 TEST(CausalCounter, Idempotent) {
-  crdt::causal_counter replica1(1);
+  crdt::causal_counter replica1(kOne);
 
   ++replica1;
 
-  crdt::causal_counter replica1_snapshot(1);
+  crdt::causal_counter replica1_snapshot(kOne);
 
   ++replica1_snapshot;
 
@@ -83,25 +93,25 @@ TEST(CausalCounter, Idempotent) {
 }
 
 TEST(CausalCounter, ReplacementRemovesPreviouslyReplicatedContribution) {
-  crdt::causal_counter sender(1);
-  crdt::causal_counter receiver(2);
+  crdt::causal_counter sender(kOne);
+  crdt::causal_counter receiver(kTwo);
 
-  const auto first = sender += 10;
+  const auto first = sender += kTen;
   receiver.merge(first);
-  const auto replacement = sender += 5;
+  const auto replacement = sender += kFive;
   receiver.merge(replacement);
   receiver.merge(first);
 
-  EXPECT_EQ(sender.read(), 15);
-  EXPECT_EQ(receiver.read(), 15);
+  EXPECT_EQ(sender.read(), kFifteen);
+  EXPECT_EQ(receiver.read(), kFifteen);
   EXPECT_EQ(sender, receiver);
 }
 
 TEST(CausalCounter, SupportsNegativeValues) {
-  crdt::causal_counter replica(1);
+  crdt::causal_counter replica(kOne);
 
-  const auto delta = replica -= 3;
+  const auto delta = replica -= kThree;
 
-  EXPECT_EQ(replica.read(), -3);
-  EXPECT_EQ(delta.read(), -3);
+  EXPECT_EQ(replica.read(), -kThree);
+  EXPECT_EQ(delta.read(), -kThree);
 }

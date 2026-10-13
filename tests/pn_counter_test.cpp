@@ -5,11 +5,17 @@
 
 #include <gtest/gtest.h>
 
-TEST(PositiveNegativeCounter, SyncByDelta) {
-  crdt::pn_counter replica1(1);
-  crdt::pn_counter replica2(2);
+namespace {
+constexpr auto kOne = 1;
+constexpr auto kTwo = 2;
+constexpr auto kThree = 3;
+}  // namespace
 
-  crdt::pn_counter replica3(3);
+TEST(PositiveNegativeCounter, SyncByDelta) {
+  crdt::pn_counter replica1(kOne);
+  crdt::pn_counter replica2(kTwo);
+
+  crdt::pn_counter replica3(kThree);
   replica3.merge(replica2);
 
   auto delta = ++replica1;
@@ -26,8 +32,8 @@ TEST(PositiveNegativeCounter, SyncByDelta) {
 }
 
 TEST(PositiveNegativeCounter, SyncPositiveNegativeReplicas) {
-  crdt::pn_counter replica1(1);
-  crdt::pn_counter replica2(2);
+  crdt::pn_counter replica1(kOne);
+  crdt::pn_counter replica2(kTwo);
 
   auto positive_delta = ++replica1;
   /* accamulate deltas */
@@ -45,9 +51,9 @@ TEST(PositiveNegativeCounter, SyncPositiveNegativeReplicas) {
 }
 
 TEST(PositiveNegativeCounter, Associative) {
-  crdt::pn_counter replica1(1);
-  crdt::pn_counter replica2(2);
-  crdt::pn_counter replica3(3);
+  crdt::pn_counter replica1(kOne);
+  crdt::pn_counter replica2(kTwo);
+  crdt::pn_counter replica3(kThree);
 
   ++replica1;
 
@@ -70,8 +76,8 @@ TEST(PositiveNegativeCounter, Associative) {
 }
 
 TEST(PositiveNegativeCounter, Commutative) {
-  crdt::pn_counter replica1(1);
-  crdt::pn_counter replica2(2);
+  crdt::pn_counter replica1(kOne);
+  crdt::pn_counter replica2(kTwo);
 
   ++replica1;
 
@@ -89,11 +95,11 @@ TEST(PositiveNegativeCounter, Commutative) {
 }
 
 TEST(PositiveNegativeCounter, Idempotent) {
-  crdt::pn_counter replica1(1);
+  crdt::pn_counter replica1(kOne);
 
   ++replica1;
 
-  crdt::pn_counter replica1_snapshot(1);
+  crdt::pn_counter replica1_snapshot(kOne);
 
   ++replica1_snapshot;
 
@@ -103,9 +109,9 @@ TEST(PositiveNegativeCounter, Idempotent) {
 }
 
 TEST(PositiveNegativeCounter, RepresentsNegativeValues) {
-  crdt::pn_counter replica(1);
+  crdt::pn_counter replica(kOne);
 
   --replica;
 
-  EXPECT_EQ(replica.read(), -1);
+  EXPECT_EQ(replica.read(), -kOne);
 }

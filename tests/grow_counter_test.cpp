@@ -5,11 +5,17 @@
 
 #include <gtest/gtest.h>
 
-TEST(GrowOnlyCounter, SyncByDelta) {
-  crdt::gcounter replica1(1);
-  crdt::gcounter replica2(2);
+namespace {
+constexpr auto kOne = 1;
+constexpr auto kTwo = 2;
+constexpr auto kThree = 3;
+}  // namespace
 
-  crdt::gcounter replica3(3);
+TEST(GrowOnlyCounter, SyncByDelta) {
+  crdt::gcounter replica1(kOne);
+  crdt::gcounter replica2(kTwo);
+
+  crdt::gcounter replica3(kThree);
   replica3.merge(replica2);
 
   auto delta = ++replica1;
@@ -26,9 +32,9 @@ TEST(GrowOnlyCounter, SyncByDelta) {
 }
 
 TEST(GrowOnlyCounter, Associative) {
-  crdt::gcounter replica1(1);
-  crdt::gcounter replica2(2);
-  crdt::gcounter replica3(3);
+  crdt::gcounter replica1(kOne);
+  crdt::gcounter replica2(kTwo);
+  crdt::gcounter replica3(kThree);
 
   ++replica1;
 
@@ -50,8 +56,8 @@ TEST(GrowOnlyCounter, Associative) {
 }
 
 TEST(GrowOnlyCounter, Commutative) {
-  crdt::gcounter replica1(1);
-  crdt::gcounter replica2(2);
+  crdt::gcounter replica1(kOne);
+  crdt::gcounter replica2(kTwo);
 
   ++replica1;
 
@@ -68,11 +74,11 @@ TEST(GrowOnlyCounter, Commutative) {
 }
 
 TEST(GrowOnlyCounter, Idempotent) {
-  crdt::gcounter replica1(1);
+  crdt::gcounter replica1(kOne);
 
   ++replica1;
 
-  crdt::gcounter replica1_snapshot(1);
+  crdt::gcounter replica1_snapshot(kOne);
 
   ++replica1_snapshot;
 

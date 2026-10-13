@@ -12,7 +12,8 @@
 
 namespace crdt {
 
-template <typename V> struct lwwreg {
+template <typename V>
+struct lwwreg {
   using self_type = lwwreg<V>;
 
   lwwreg() = default;
@@ -20,11 +21,6 @@ template <typename V> struct lwwreg {
   lwwreg(std::uint64_t replicaID, V value) : _replicaID(replicaID) {
     set(std::move(value));
   }
-
-  lwwreg(const self_type &) = default;
-  lwwreg(self_type &&) = default;
-  auto operator=(const self_type &) -> self_type & = default;
-  auto operator=(self_type &&) -> self_type & = default;
 
   auto set(V value) -> self_type {
     if (_logical_time == std::numeric_limits<std::uint64_t>::max()) {
@@ -36,7 +32,7 @@ template <typename V> struct lwwreg {
     return *this;
   }
 
-  void merge(const self_type &delta) {
+  void merge(const self_type& delta) {
     if (_logical_time < delta._logical_time ||
         (_logical_time == delta._logical_time &&
          _writer_replicaID < delta._writer_replicaID)) {
@@ -68,19 +64,19 @@ template <typename V> struct lwwreg {
                            observed_logical_time + 1);
   }
 
-  auto operator==(const self_type &other) const -> bool {
+  auto operator==(const self_type& other) const -> bool {
     return _logical_time == other._logical_time &&
            _writer_replicaID == other._writer_replicaID &&
            _value == other._value;
   }
 
-private:
+ private:
   std::uint64_t _replicaID = 0;
   V _value{};
   std::uint64_t _logical_time = 0;
   std::uint64_t _writer_replicaID = 0;
 };
 
-} // namespace crdt.
-  //
-#endif // !LWWREG_H
+}  // namespace crdt.
+   //
+#endif  // !LWWREG_H

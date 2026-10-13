@@ -28,12 +28,14 @@ struct rwor_map {
   explicit rwor_map(std::uint64_t replicaID)
       : _replicaID(replicaID), _keys(replicaID) {}
 
-  auto operator[](K key) -> std::optional<V> {
+  auto read(K key) const -> std::optional<V> {
     auto it = _entries.find(key);
     return _keys.contains(key) && it != _entries.end()
                ? std::make_optional(it->second)
                : std::nullopt;
   }
+
+  auto operator[](K key) -> std::optional<V> { return read(std::move(key)); }
 
   auto insert(K key, V value) -> /* delta */ self_type {
     auto keys_delta = _keys.insert(key);
@@ -41,12 +43,13 @@ struct rwor_map {
     return rwor_map(_replicaID, keys_delta, key, _entries.find(key)->second);
   }
 
-  auto insert(const std::pair<K, V> &pair) -> /* delta */ self_type {
+  auto insert(const std::pair<K, V>& pair) -> /* delta */ self_type {
     return this->insert(pair.first, pair.second);
   }
 
-  auto insert(std::pair<K, V> &&pair) -> /* delta */ self_type {
-    return this->insert(pair.first, pair.second);
+  auto insert(std::pair<K, V>&& pair) -> /* delta */ self_type {
+    auto [key, value] = std::move(pair);
+    return this->insert(std::move(key), std::move(value));
   }
 
   auto erase(K key) -> /* delta */ self_type {
@@ -55,14 +58,14 @@ struct rwor_map {
     return rwor_map(_replicaID, keys_delta);
   }
 
-  void merge(const self_type &delta) {
+  void merge(const self_type& delta) {
     _keys.merge(delta._keys);
     for (auto [d, value] : delta._entries) {
       if (_keys.contains(d)) {
         this->insert_entry(d, value);
       }
     }
-    std::erase_if(_entries, [this](const auto &it) {
+    std::erase_if(_entries, [this](const auto& it) {
       return !this->_keys.contains(it.first);
     });
   }
@@ -71,11 +74,11 @@ struct rwor_map {
     return _keys.contains(key) && _entries.contains(key);
   }
 
-  auto operator==(const self_type &other) const -> bool {
+  auto operator==(const self_type& other) const -> bool {
     return this->_keys == other._keys && this->_entries == other._entries;
   }
 
-private:
+ private:
   std::uint64_t _replicaID;
   rwor_set<K, _entries_map_type, _set_type, _map_type> _keys;
   _kv_map_type _entries;
@@ -104,6 +107,6 @@ private:
   }
 };
 
-} // namespace crdt.
+}  // namespace crdt.
 
-#endif // !AWORMAP_H
+#endif  // !AWORMAP_H

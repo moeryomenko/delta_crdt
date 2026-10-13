@@ -4,15 +4,24 @@
 
 #include <gtest/gtest.h>
 
-TEST(MultiVersionRegister, SyncByDelta) {
-  crdt::mvreg<std::uint64_t> replica1(1);
-  crdt::mvreg<std::uint64_t> replica2(2);
+namespace {
+constexpr auto kOne = 1;
+constexpr auto kTwo = 2;
+constexpr auto kThree = 3;
+constexpr auto kTen = 10;
+constexpr auto kTwelve = 12;
+constexpr auto kThirteen = 13;
+}  // namespace
 
-  crdt::mvreg<std::uint64_t> replica3(2);
+TEST(MultiVersionRegister, SyncByDelta) {
+  crdt::mvreg<std::uint64_t> replica1(kOne);
+  crdt::mvreg<std::uint64_t> replica2(kTwo);
+
+  crdt::mvreg<std::uint64_t> replica3(kTwo);
   replica3.merge(replica2);
 
-  auto delta = replica1.set(10UL);
-  delta.merge(replica1.set(12UL));
+  auto delta = replica1.set(kTen);
+  delta.merge(replica1.set(kTwelve));
   replica2.merge(delta);
 
   replica3.merge(replica1);
@@ -26,13 +35,13 @@ TEST(MultiVersionRegister, SyncByDelta) {
 }
 
 TEST(MultiVersionRegister, Associative) {
-  crdt::mvreg<std::uint64_t> replica1(1);
-  crdt::mvreg<std::uint64_t> replica2(2);
-  crdt::mvreg<std::uint64_t> replica3(3);
+  crdt::mvreg<std::uint64_t> replica1(kOne);
+  crdt::mvreg<std::uint64_t> replica2(kTwo);
+  crdt::mvreg<std::uint64_t> replica3(kThree);
 
-  replica1.set(10UL);
-  replica2.set(12UL);
-  replica3.set(13UL);
+  replica1.set(kTen);
+  replica2.set(kTwelve);
+  replica3.set(kThirteen);
 
   auto replica1_snapshot = replica1;
 
@@ -46,11 +55,11 @@ TEST(MultiVersionRegister, Associative) {
 }
 
 TEST(MultiVersionRegister, Commutative) {
-  crdt::mvreg<std::uint64_t> replica1(1);
-  crdt::mvreg<std::uint64_t> replica2(2);
+  crdt::mvreg<std::uint64_t> replica1(kOne);
+  crdt::mvreg<std::uint64_t> replica2(kTwo);
 
-  replica1.set(10UL);
-  replica2.set(12UL);
+  replica1.set(kTen);
+  replica2.set(kTwelve);
 
   auto replica1_snapshot = replica1;
 
@@ -63,9 +72,9 @@ TEST(MultiVersionRegister, Commutative) {
 }
 
 TEST(MultiVersionRegister, Idempotent) {
-  crdt::mvreg<std::uint64_t> replica1(1);
+  crdt::mvreg<std::uint64_t> replica1(kOne);
 
-  replica1.set(10UL);
+  replica1.set(kTen);
 
   auto replica1_snapshot = replica1;
 

@@ -20,7 +20,7 @@ template <std::totally_ordered V,
 struct mvreg {
   using self_type = mvreg<V, _entries_map_type, _set_type, _map_type>;
 
-  mvreg(std::uint64_t replicaID) : _replicaID(replicaID) {}
+  explicit mvreg(std::uint64_t replicaID) : _replicaID(replicaID) {}
 
   auto set(V value) -> /* delta */ self_type {
     auto delta = _values.clear();
@@ -28,23 +28,23 @@ struct mvreg {
     return mvreg(_replicaID, delta);
   }
 
-  void merge(const self_type &delta) { _values.merge(delta._values); }
+  void merge(const self_type& delta) { _values.merge(delta._values); }
 
   auto read() const -> std::set<V> {
     std::set<V> result;
     std::transform(_values.entries.cbegin(), _values.entries.cend(),
                    std::inserter(result, result.end()),
-                   [](const auto &it) { return it.second; });
+                   [](const auto& it) { return it.second; });
     return result;
   }
 
-  auto operator==(const self_type &other) const -> bool {
+  auto operator==(const self_type& other) const -> bool {
     return _values.entries == other._values.entries &&
            _values.context.clock.vector == other._values.context.clock.vector &&
            _values.context.dot_cloud == other._values.context.dot_cloud;
   }
 
-private:
+ private:
   std::uint64_t _replicaID;
   dot_kernel<V, _entries_map_type, _set_type, _map_type> _values;
 
@@ -53,6 +53,6 @@ private:
       : _replicaID(replicaID), _values(delta) {}
 };
 
-} // namespace crdt.
+}  // namespace crdt.
 
-#endif // !MVREG_H
+#endif  // !MVREG_H

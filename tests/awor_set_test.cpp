@@ -4,18 +4,28 @@
 
 #include <gtest/gtest.h>
 
-TEST(AddWinObservedRemoveSet, SyncByDelta) {
-  crdt::awor_set<std::uint64_t> replica1(1);
-  crdt::awor_set<std::uint64_t> replica2(2);
+namespace {
+constexpr auto kOne = 1;
+constexpr auto kTwo = 2;
+constexpr auto kThree = 3;
+constexpr auto kTen = 10;
+constexpr auto kEleven = 11;
+constexpr auto kTwelve = 12;
+constexpr auto kThirteen = 13;
+}  // namespace
 
-  crdt::awor_set<std::uint64_t> replica3(2);
+TEST(AddWinObservedRemoveSet, SyncByDelta) {
+  crdt::awor_set<std::uint64_t> replica1(kOne);
+  crdt::awor_set<std::uint64_t> replica2(kTwo);
+
+  crdt::awor_set<std::uint64_t> replica3(kTwo);
   replica3.merge(replica2);
 
-  auto delta = replica1.insert(10UL);
-  delta.merge(replica1.insert(11UL));
-  delta.merge(replica1.insert(12UL));
+  auto delta = replica1.insert(kTen);
+  delta.merge(replica1.insert(kEleven));
+  delta.merge(replica1.insert(kTwelve));
 
-  replica1.merge(replica2.erase(12UL));
+  replica1.merge(replica2.erase(kTwelve));
   replica2.merge(delta);
 
   replica3.merge(replica1);
@@ -26,14 +36,14 @@ TEST(AddWinObservedRemoveSet, SyncByDelta) {
 }
 
 TEST(AddWinObservedRemoveSet, Associative) {
-  crdt::awor_set<std::uint64_t> replica1(1);
-  crdt::awor_set<std::uint64_t> replica2(2);
-  crdt::awor_set<std::uint64_t> replica3(3);
+  crdt::awor_set<std::uint64_t> replica1(kOne);
+  crdt::awor_set<std::uint64_t> replica2(kTwo);
+  crdt::awor_set<std::uint64_t> replica3(kThree);
 
-  replica1.insert(10UL);
-  replica1.insert(11UL);
-  replica2.insert(12UL);
-  replica3.insert(13UL);
+  replica1.insert(kTen);
+  replica1.insert(kEleven);
+  replica2.insert(kTwelve);
+  replica3.insert(kThirteen);
 
   auto replica1_snapshot = replica1;
 
@@ -47,12 +57,12 @@ TEST(AddWinObservedRemoveSet, Associative) {
 }
 
 TEST(AddWinObservedRemoveSet, Commutative) {
-  crdt::awor_set<std::uint64_t> replica1(1);
-  crdt::awor_set<std::uint64_t> replica2(2);
+  crdt::awor_set<std::uint64_t> replica1(kOne);
+  crdt::awor_set<std::uint64_t> replica2(kTwo);
 
-  replica1.insert(10UL);
-  replica1.insert(11UL);
-  replica2.insert(12UL);
+  replica1.insert(kTen);
+  replica1.insert(kEleven);
+  replica2.insert(kTwelve);
 
   auto replica1_snapshot = replica1;
 
@@ -64,10 +74,10 @@ TEST(AddWinObservedRemoveSet, Commutative) {
 }
 
 TEST(AddWinObservedRemoveSet, Idempotent) {
-  crdt::awor_set<std::uint64_t> replica1(1);
+  crdt::awor_set<std::uint64_t> replica1(kOne);
 
-  replica1.insert(10UL);
-  replica1.insert(11UL);
+  replica1.insert(kTen);
+  replica1.insert(kEleven);
 
   auto replica1_snapshot = replica1;
 

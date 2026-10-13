@@ -9,18 +9,20 @@ namespace crdt {
 
 namespace helpers {
 
-template <crdt::incrementable_type T> struct increment {
-  constexpr auto operator()(const T &arg) const -> T { return arg + 1; }
+template <crdt::incrementable_type T>
+struct increment {
+  constexpr auto operator()(const T& arg) const -> T { return arg + 1; }
 };
 
-template <std::totally_ordered T> struct max {
-  max(T value) : _value(value) {}
+template <std::totally_ordered T>
+struct max {
+  explicit max(T value) : _value(value) {}
 
-  constexpr auto operator()(const T &arg) const -> T {
+  constexpr auto operator()(const T& arg) const -> T {
     return (_value < arg) ? arg : _value;
   }
 
-private:
+ private:
   T _value;
 };
 
@@ -35,11 +37,11 @@ auto get_or_default(_map_type _map, _key_type _key, _value_type _value)
   }
 }
 
-} // namespace helpers
+}  // namespace helpers
 
 template <typename K, typename V, typename T,
           iterable_assiative_type<K, V> _map_type>
-auto upsert(_map_type &map, K key, V val, T fn) -> V {
+auto upsert(_map_type& map, K key, V val, T fn) -> V {
   if (auto it = map.find(key); it != map.end()) {
     auto val = fn(it->second);
     it->second = val;
@@ -50,6 +52,6 @@ auto upsert(_map_type &map, K key, V val, T fn) -> V {
   }
 }
 
-} // namespace crdt
+}  // namespace crdt
 
-#endif // !HELPERS_H
+#endif  // !HELPERS_H
