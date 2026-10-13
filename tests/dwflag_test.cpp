@@ -16,16 +16,16 @@ TEST(DisableWinFlag, SyncByDelta) {
 
   replica3.merge(replica1);
 
-  EXPECT_TRUE(replica1.is_enaled());
-  EXPECT_TRUE(replica2.is_enaled());
-  EXPECT_TRUE(replica3.is_enaled());
+  EXPECT_TRUE(replica1.is_enabled());
+  EXPECT_TRUE(replica2.is_enabled());
+  EXPECT_TRUE(replica3.is_enabled());
 
   replica2.merge(replica3.disable());
   replica1.merge(replica2);
 
-  EXPECT_TRUE(replica1.is_disaled());
-  EXPECT_TRUE(replica2.is_disaled());
-  EXPECT_TRUE(replica3.is_disaled());
+  EXPECT_TRUE(replica1.is_disabled());
+  EXPECT_TRUE(replica2.is_disabled());
+  EXPECT_TRUE(replica3.is_disabled());
 
   EXPECT_EQ(replica1, replica2);
   EXPECT_EQ(replica2, replica3);
